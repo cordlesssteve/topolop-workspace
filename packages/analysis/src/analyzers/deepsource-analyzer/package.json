@@ -1,0 +1,42 @@
+{
+  "name": "@topolop/deepsource-analyzer",
+  "version": "1.0.0",
+  "description": "DeepSource AI-powered analysis integration for Topolop - Layer 1 Data Source",
+  "main": "src/index.js",
+  "bin": {
+    "topolop-deepsource": "src/cli.js"
+  },
+  "keywords": [
+    "deepsource",
+    "ai-powered",
+    "code-quality",
+    "static-analysis",
+    "sast",
+    "security",
+    "automated-fixes",
+    "analysis",
+    "topolop",
+    "devtools",
+    "layer1"
+  ],
+  "dependencies": {
+    "fs-extra": "^11.1.1",
+    "axios": "^1.4.0",
+    "graphql-request": "^6.1.0",
+    "commander": "^9.4.0"
+  },
+  "devDependencies": {
+    "jest": "^29.5.0"
+  },
+  "scripts": {
+    "test": "jest",
+    "cli": "node src/cli.js"
+  },
+  "author": "Topolop",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cordlesssteve/topolop.git",
+    "directory": "src/analyzers/deepsource-analyzer"
+  }
+}

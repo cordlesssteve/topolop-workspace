@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Topolop - City Metaphor Codebase Visualization</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        
+        .header p {
+            color: #7f8c8d;
+            margin-top: 0.5rem;
+        }
+        
+        .controls {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .control-group label {
+            font-weight: 500;
+            color: #2c3e50;
+        }
+        
+        select, input[type="file"], button {
+            padding: 0.5rem 1rem;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+        
+        select:focus, input:focus, button:hover {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        button:hover {
+            background: #5a6fd8;
+            transform: translateY(-1px);
+        }
+        
+        button:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .main {
+            display: flex;
+            height: calc(100vh - 140px);
+        }
+        
+        .sidebar {
+            width: 300px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem;
+            overflow-y: auto;
+            border-right: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        
+        .sidebar h3 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+        
+        .stats {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .legend {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+            margin-right: 0.5rem;
+        }
+        
+        .canvas-container {
+            flex: 1;
+            position: relative;
+            background: #ecf0f1;
+            overflow: hidden;
+        }
+        
+        #cityCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            cursor: grab;
+            transition: transform 0.1s ease;
+        }
+        
+        #cityCanvas:active {
+            cursor: grabbing;
+        }
+        
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #7f8c8d;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #ecf0f1;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .instructions {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            max-width: 300px;
+        }
+        
+        .instructions h4 {
+            margin-bottom: 0.5rem;
+            color: #667eea;
+        }
+        
+        .error {
+            background: #e74c3c;
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem;
+            display: none;
+        }
+        
+        .success {
+            background: #27ae60;
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem;
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .main {
+                flex-direction: column;
+                height: auto;
+            }
+            
+            .sidebar {
+                width: 100%;
+                order: 2;
+            }
+            
+            .canvas-container {
+                height: 60vh;
+                order: 1;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏙️ Topolop</h1>
+        <p>Multi-Metaphor Codebase Visualization System</p>
+    </div>
+
+    <div class="controls">
+        <div class="control-group">
+            <label for="fileInput">Load Codebase:</label>
+            <input type="file" id="fileInput" webkitdirectory directory>
+        </div>
+        
+        <div class="control-group">
+            <label for="engineSelect">Render Engine:</label>
+            <select id="engineSelect">
+                <option value="auto">Auto-detect</option>
+                <option value="browser">Browser Canvas</option>
+                <option value="svg">SVG Vector</option>
+                <option value="mock">Mock (Debug)</option>
+            </select>
+        </div>
+        
+        <div class="control-group">
+            <button id="renderBtn">🎨 Render City</button>
+            <button id="exportBtn" disabled>💾 Export Image</button>
+            <button id="resetViewBtn">🔄 Reset View</button>
+        </div>
+    </div>
+
+    <div class="error" id="errorMessage"></div>
+    <div class="success" id="successMessage"></div>
+
+    <div class="main">
+        <div class="sidebar">
+            <h3>📊 City Statistics</h3>
+            <div class="stats">
+                <div class="stat-item">
+                    <span>Districts:</span>
+                    <strong id="districtCount">0</strong>
+                </div>
+                <div class="stat-item">
+                    <span>Buildings:</span>
+                    <strong id="buildingCount">0</strong>
+                </div>
+                <div class="stat-item">
+                    <span>Roads:</span>
+                    <strong id="roadCount">0</strong>
+                </div>
+                <div class="stat-item">
+                    <span>Traffic Flows:</span>
+                    <strong id="trafficCount">0</strong>
+                </div>
+                <div class="stat-item">
+                    <span>Construction Sites:</span>
+                    <strong id="constructionCount">0</strong>
+                </div>
+            </div>
+
+            <h3>🎨 Legend</h3>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #4CAF50;"></div>
+                    <span>Feature Modules</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #2196F3;"></div>
+                    <span>Core Modules</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #FF9800;"></div>
+                    <span>Utility Modules</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #9C27B0;"></div>
+                    <span>Test Modules</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #F44336;"></div>
+                    <span>High Activity Files</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #607D8B;"></div>
+                    <span>Configuration Files</span>
+                </div>
+            </div>
+
+            <h3>ℹ️ About</h3>
+            <p style="font-size: 0.9rem; line-height: 1.5; color: #666;">
+                Topolop transforms your codebase into a living city where:
+            </p>
+            <ul style="font-size: 0.9rem; line-height: 1.5; color: #666; margin: 0.5rem 0; padding-left: 1.5rem;">
+                <li>Files become buildings</li>
+                <li>Modules become districts</li>
+                <li>Dependencies become roads</li>
+                <li>Function calls become traffic</li>
+                <li>Recent changes become construction sites</li>
+            </ul>
+        </div>
+
+        <div class="canvas-container">
+            <canvas id="cityCanvas"></canvas>
+            
+            <div class="loading" id="loadingIndicator">
+                <div class="loading-spinner"></div>
+                <p>Analyzing codebase and rendering city...</p>
+            </div>
+
+            <div class="instructions">
+                <h4>🎮 Controls</h4>
+                <p><strong>Mouse Drag:</strong> Pan around the city</p>
+                <p><strong>Mouse Wheel:</strong> Zoom in/out</p>
+                <p><strong>Double Click:</strong> Reset view</p>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // This would normally import the actual canvas renderer
+        // For now, we'll create a demo implementation
+        
+        class DemoCanvasRenderer {
+            constructor(canvas) {
+                this.canvas = canvas;
+                this.ctx = canvas.getContext('2d');
+                this.setupCanvas();
+            }
+            
+            setupCanvas() {
+                const container = this.canvas.parentElement;
+                this.canvas.width = container.clientWidth;
+                this.canvas.height = container.clientHeight;
+                
+                // Add event listeners for interaction
+                this.addEventListeners();
+            }
+            
+            addEventListeners() {
+                let isDragging = false;
+                let lastX, lastY;
+                let translateX = 0, translateY = 0;
+                let scale = 1;
+                
+                // Mouse controls
+                this.canvas.addEventListener('mousedown', (e) => {
+                    isDragging = true;
+                    lastX = e.clientX;
+                    lastY = e.clientY;
+                    this.canvas.style.cursor = 'grabbing';
+                });
+                
+                this.canvas.addEventListener('mousemove', (e) => {
+                    if (isDragging) {
+                        const deltaX = e.clientX - lastX;
+                        const deltaY = e.clientY - lastY;
+                        translateX += deltaX;
+                        translateY += deltaY;
+                        this.render();
+                        lastX = e.clientX;
+                        lastY = e.clientY;
+                    }
+                });
+                
+                this.canvas.addEventListener('mouseup', () => {
+                    isDragging = false;
+                    this.canvas.style.cursor = 'grab';
+                });
+                
+                this.canvas.addEventListener('wheel', (e) => {
+                    e.preventDefault();
+                    const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
+                    scale *= zoomFactor;
+                    scale = Math.max(0.1, Math.min(3, scale));
+                    this.render();
+                });
+                
+                this.canvas.addEventListener('dblclick', () => {
+                    translateX = 0;
+                    translateY = 0;
+                    scale = 1;
+                    this.render();
+                });
+                
+                this.translateX = () => translateX;
+                this.translateY = () => translateY;
+                this.scale = () => scale;
+                this.setTransform = (x, y, s) => {
+                    translateX = x;
+                    translateY = y;
+                    scale = s;
+                    this.render();
+                };
+            }
+            
+            render() {
+                // Clear canvas
+                this.ctx.resetTransform();
+                this.ctx.fillStyle = '#87CEEB';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Apply transforms
+                this.ctx.translate(this.translateX(), this.translateY());
+                this.ctx.scale(this.scale(), this.scale());
+                
+                // Draw demo city
+                this.drawDemoCity();
+            }
+            
+            drawDemoCity() {
+                // Draw districts (background regions)
+                this.drawDistrict(200, 150, 300, 200, '#4CAF50', 'Feature District');
+                this.drawDistrict(600, 150, 250, 180, '#2196F3', 'Core District'); 
+                this.drawDistrict(200, 400, 200, 150, '#FF9800', 'Utils District');
+                
+                // Draw buildings
+                this.drawBuilding(250, 200, 40, 30, 60, '#8BC34A', 'auth.js');
+                this.drawBuilding(320, 180, 35, 25, 80, '#CDDC39', 'login.js');
+                this.drawBuilding(380, 220, 45, 35, 50, '#FFC107', 'user.js');
+                
+                this.drawBuilding(650, 200, 50, 40, 100, '#2196F3', 'core.js');
+                this.drawBuilding(720, 180, 30, 30, 70, '#3F51B5', 'engine.js');
+                
+                this.drawBuilding(250, 450, 25, 25, 40, '#FF9800', 'utils.js');
+                this.drawBuilding(320, 430, 30, 20, 30, '#FF5722', 'helpers.js');
+                
+                // Draw roads
+                this.drawRoad(270, 215, 650, 220, 4, '#666');
+                this.drawRoad(340, 200, 340, 430, 3, '#999');
+                this.drawRoad(250, 475, 650, 220, 2, '#AAA');
+                
+                // Draw traffic
+                this.drawTraffic(400, 210, 500, 215, '#4CAF50');
+                this.drawTraffic(340, 300, 340, 350, '#2196F3');
+                
+                // Draw construction sites
+                this.drawConstructionSite(400, 180, '🚧');
+            }
+            
+            drawDistrict(x, y, width, height, color, label) {
+                // District boundary
+                this.ctx.strokeStyle = color;
+                this.ctx.lineWidth = 2;
+                this.ctx.setLineDash([10, 5]);
+                this.ctx.strokeRect(x, y, width, height);
+                this.ctx.setLineDash([]);
+                
+                // District label
+                this.ctx.fillStyle = color;
+                this.ctx.font = 'bold 14px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText(label, x + width/2, y - 10);
+            }
+            
+            drawBuilding(x, y, width, height, buildingHeight, color, label) {
+                // Building base
+                this.ctx.fillStyle = color;
+                this.ctx.fillRect(x - width/2, y - height/2, width, height);
+                this.ctx.strokeStyle = '#666';
+                this.ctx.lineWidth = 1;
+                this.ctx.strokeRect(x - width/2, y - height/2, width, height);
+                
+                // 3D effect (top)
+                this.ctx.fillStyle = this.lightenColor(color);
+                this.ctx.beginPath();
+                this.ctx.moveTo(x - width/2, y - height/2);
+                this.ctx.lineTo(x + width/2, y - height/2);
+                this.ctx.lineTo(x + width/2 - 5, y - height/2 - buildingHeight * 0.3);
+                this.ctx.lineTo(x - width/2 - 5, y - height/2 - buildingHeight * 0.3);
+                this.ctx.closePath();
+                this.ctx.fill();
+                this.ctx.stroke();
+                
+                // 3D effect (side)
+                this.ctx.fillStyle = this.darkenColor(color);
+                this.ctx.beginPath();
+                this.ctx.moveTo(x + width/2, y - height/2);
+                this.ctx.lineTo(x + width/2, y + height/2);
+                this.ctx.lineTo(x + width/2 - 5, y + height/2 - buildingHeight * 0.3);
+                this.ctx.lineTo(x + width/2 - 5, y - height/2 - buildingHeight * 0.3);
+                this.ctx.closePath();
+                this.ctx.fill();
+                this.ctx.stroke();
+                
+                // Windows
+                const windowSize = 3;
+                const windowSpacing = 6;
+                for (let wx = -width/2 + 5; wx < width/2 - 5; wx += windowSpacing) {
+                    for (let wy = -height/2 + 5; wy < height/2 - 5; wy += windowSpacing) {
+                        this.ctx.fillStyle = '#FFEB3B';
+                        this.ctx.fillRect(x + wx, y + wy, windowSize, windowSize);
+                    }
+                }
+                
+                // Label
+                this.ctx.fillStyle = '#333';
+                this.ctx.font = '10px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText(label, x, y + height/2 + 15);
+            }
+            
+            drawRoad(x1, y1, x2, y2, width, color) {
+                this.ctx.strokeStyle = color;
+                this.ctx.lineWidth = width;
+                this.ctx.beginPath();
+                this.ctx.moveTo(x1, y1);
+                this.ctx.lineTo(x2, y2);
+                this.ctx.stroke();
+            }
+            
+            drawTraffic(x1, y1, x2, y2, color) {
+                // Animated dots moving along the road
+                const time = Date.now() * 0.002;
+                const progress = (Math.sin(time) + 1) * 0.5;
+                const x = x1 + (x2 - x1) * progress;
+                const y = y1 + (y2 - y1) * progress;
+                
+                this.ctx.fillStyle = color;
+                this.ctx.beginPath();
+                this.ctx.arc(x, y, 3, 0, Math.PI * 2);
+                this.ctx.fill();
+            }
+            
+            drawConstructionSite(x, y, icon) {
+                this.ctx.font = '20px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText(icon, x, y);
+            }
+            
+            lightenColor(color) {
+                // Simple color lightening
+                const hex = color.replace('#', '');
+                const r = Math.min(255, parseInt(hex.substr(0,2), 16) + 40);
+                const g = Math.min(255, parseInt(hex.substr(2,2), 16) + 40);
+                const b = Math.min(255, parseInt(hex.substr(4,2), 16) + 40);
+                return `rgb(${r},${g},${b})`;
+            }
+            
+            darkenColor(color) {
+                const hex = color.replace('#', '');
+                const r = Math.max(0, parseInt(hex.substr(0,2), 16) - 40);
+                const g = Math.max(0, parseInt(hex.substr(2,2), 16) - 40);
+                const b = Math.max(0, parseInt(hex.substr(4,2), 16) - 40);
+                return `rgb(${r},${g},${b})`;
+            }
+        }
+        
+        // Initialize the demo
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('cityCanvas');
+            const renderer = new DemoCanvasRenderer(canvas);
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            
+            // Hide loading indicator and show canvas
+            loadingIndicator.style.display = 'none';
+            canvas.style.display = 'block';
+            
+            // Set demo stats
+            document.getElementById('districtCount').textContent = '3';
+            document.getElementById('buildingCount').textContent = '7';
+            document.getElementById('roadCount').textContent = '3';
+            document.getElementById('trafficCount').textContent = '2';
+            document.getElementById('constructionCount').textContent = '1';
+            
+            // Initial render
+            renderer.render();
+            
+            // Animation loop for traffic
+            function animate() {
+                renderer.render();
+                requestAnimationFrame(animate);
+            }
+            animate();
+            
+            // Event handlers
+            document.getElementById('renderBtn').addEventListener('click', () => {
+                showMessage('Rendering city visualization...', 'success');
+                renderer.render();
+            });
+            
+            document.getElementById('resetViewBtn').addEventListener('click', () => {
+                renderer.setTransform(0, 0, 1);
+                showMessage('View reset to default', 'success');
+            });
+            
+            document.getElementById('exportBtn').addEventListener('click', () => {
+                const dataURL = canvas.toDataURL('image/png');
+                const link = document.createElement('a');
+                link.href = dataURL;
+                link.download = 'topolop-city-visualization.png';
+                link.click();
+                showMessage('City visualization exported!', 'success');
+            });
+            
+            document.getElementById('fileInput').addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    showMessage(`Selected ${e.target.files.length} files. Click "Render City" to analyze.`, 'success');
+                    document.getElementById('exportBtn').disabled = false;
+                }
+            });
+            
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                renderer.setupCanvas();
+                renderer.render();
+            });
+        });
+        
+        function showMessage(text, type) {
+            const errorEl = document.getElementById('errorMessage');
+            const successEl = document.getElementById('successMessage');
+            
+            errorEl.style.display = 'none';
+            successEl.style.display = 'none';
+            
+            const targetEl = type === 'error' ? errorEl : successEl;
+            targetEl.textContent = text;
+            targetEl.style.display = 'block';
+            
+            setTimeout(() => {
+                targetEl.style.display = 'none';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

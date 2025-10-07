@@ -1,0 +1,38 @@
+{
+  "name": "@topolop/snyk-analyzer",
+  "version": "1.0.0",
+  "description": "Snyk vulnerability analysis integration for Topolop - Layer 1 Data Source",
+  "main": "src/index.js",
+  "bin": {
+    "topolop-snyk": "src/cli.js"
+  },
+  "keywords": [
+    "snyk",
+    "vulnerability",
+    "security",
+    "dependencies",
+    "analysis",
+    "topolop",
+    "devtools",
+    "layer1"
+  ],
+  "dependencies": {
+    "fs-extra": "^11.1.1",
+    "path": "^0.12.7",
+    "child_process": "^1.0.2"
+  },
+  "devDependencies": {
+    "jest": "^29.5.0"
+  },
+  "scripts": {
+    "test": "jest",
+    "cli": "node src/cli.js"
+  },
+  "author": "Topolop",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cordlesssteve/topolop.git",
+    "directory": "src/analyzers/snyk-analyzer"
+  }
+}

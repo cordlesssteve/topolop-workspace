@@ -1,0 +1,1606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 Enhanced Real Analysis Data - Topolop Security Visualization</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        body { 
+            margin: 0; 
+            padding: 0; 
+            overflow: hidden; 
+            background: linear-gradient(to bottom, #87CEEB, #E0F6FF); 
+            font-family: 'Arial', sans-serif; 
+            color: #e0e6ff;
+        }
+        #container { width: 100vw; height: 100vh; position: relative; }
+        
+        /* Tool Analysis Panel (Top Center) */
+        #toolPanel {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(10,6,20,0.95);
+            color: #e0e6ff;
+            padding: 15px 25px;
+            border-radius: 12px;
+            z-index: 100;
+            max-width: 90vw;
+            border: 1px solid #00ff88;
+            white-space: nowrap;
+        }
+
+        .tool-item {
+            background: rgba(0,255,136,0.1);
+            border: 1px solid #00ff88;
+            color: #00ff88;
+            padding: 4px 10px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.3s;
+            user-select: none;
+        }
+
+        .tool-item.active {
+            background: #00ff88;
+            color: #0a0614;
+        }
+
+        .tool-item:hover {
+            background: rgba(0,255,136,0.3);
+        }
+        
+        /* Statistics Dashboard Panel */
+        #statsPanel { 
+            position: absolute; 
+            top: 80px; 
+            left: 20px; 
+            background: rgba(10,6,20,0.95); 
+            color: #e0e6ff; 
+            padding: 15px; 
+            border-radius: 12px; 
+            z-index: 100;
+            min-width: 200px;
+            border: 1px solid #00ff88;
+            backdrop-filter: blur(10px);
+        }
+
+        #cityStats {
+            margin: 10px 0;
+            font-size: 11px;
+            line-height: 1.6;
+        }
+
+        #cityStats div {
+            display: flex;
+            justify-content: space-between;
+            margin: 4px 0;
+        }
+
+        .risk-critical { color: #ff0000 !important; }
+        .risk-high { color: #ff8800 !important; }
+        .risk-medium { color: #ffff00 !important; }
+        .risk-low { color: #88ff88 !important; }
+
+        #info h2 { 
+            margin: 0 0 15px 0; 
+            color: #00ff88; 
+            font-size: 18px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .stat-item {
+            background: rgba(0,255,136,0.1);
+            padding: 8px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #00ff88;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #a0a6bf;
+            margin-top: 2px;
+        }
+
+        /* Tool Toggle Buttons */
+        .tool-toggles {
+            margin: 15px 0;
+        }
+
+        .tool-button {
+            background: rgba(0,255,136,0.2);
+            border: 1px solid #00ff88;
+            color: #00ff88;
+            padding: 6px 12px;
+            margin: 3px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.3s;
+        }
+
+        .tool-button.active {
+            background: #00ff88;
+            color: #0a0614;
+        }
+
+        .tool-button:hover {
+            background: rgba(0,255,136,0.4);
+        }
+
+        /* Enhanced Control Panel - From Main Template */
+        #controlPanel {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(10,6,20,0.95);
+            color: #e0e6ff;
+            padding: 15px;
+            border-radius: 12px;
+            z-index: 100;
+            min-width: 200px;
+            border: 1px solid #00ff88;
+            max-width: 300px;
+        }
+
+        #controlToggle {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #00ff88;
+        }
+
+        #controlContent {
+            display: block;
+        }
+
+        .control-group {
+            margin: 15px 0;
+        }
+
+        .control-group label {
+            display: block;
+            font-size: 12px;
+            color: #a0a6bf;
+            margin-bottom: 5px;
+        }
+
+        .control-group input[type="range"] {
+            width: 100%;
+            margin: 5px 0;
+        }
+
+        .control-group input[type="number"] {
+            width: 60px;
+            background: rgba(0,255,136,0.1);
+            border: 1px solid #00ff88;
+            color: #00ff88;
+            padding: 4px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .control-button {
+            background: rgba(0,255,136,0.1);
+            border: 1px solid #00ff88;
+            color: #00ff88;
+            padding: 8px 16px;
+            margin: 5px 2px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .control-button:hover {
+            background: rgba(0,255,136,0.3);
+        }
+
+        .control-button.active {
+            background: #00ff88;
+            color: #0a0614;
+        }
+
+        /* Building Info Panel */
+        #buildingInfo {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(10,6,20,0.95);
+            color: #e0e6ff;
+            padding: 20px;
+            border-radius: 12px;
+            z-index: 100;
+            max-width: 400px;
+            display: none;
+            border-left: 4px solid #00ff88;
+        }
+
+        /* Enhanced Legend Panel */
+        #legendPanel {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(10,6,20,0.95);
+            color: #e0e6ff;
+            padding: 15px;
+            border-radius: 12px;
+            z-index: 100;
+            max-width: 350px;
+            border: 1px solid #00ff88;
+        }
+
+        #legendToggle {
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: #00ff88;
+        }
+
+        #legendContent {
+            display: block;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+            font-size: 12px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            border-radius: 3px;
+        }
+
+        /* Movement Instructions */
+        .movement-instructions {
+            background: rgba(0,255,136,0.1);
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-size: 12px;
+        }
+
+        /* Hotspots Panel */
+        #hotspotsPanel {
+            position: absolute;
+            bottom: 100px;
+            right: 20px;
+            background: rgba(10,6,20,0.95);
+            padding: 15px;
+            border-radius: 12px;
+            z-index: 100;
+            max-width: 300px;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ff4444;
+            display: none;
+        }
+
+        .hotspot-item {
+            background: rgba(255,0,0,0.1);
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 6px;
+            border-left: 3px solid #ff4444;
+            cursor: pointer;
+        }
+
+        .hotspot-file {
+            font-weight: bold;
+            color: #ff6666;
+            font-size: 12px;
+        }
+
+        .hotspot-count {
+            color: #ffcccc;
+            font-size: 11px;
+        }
+
+        /* Loading indicator */
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            color: #00ff88;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 16px;
+            z-index: 200;
+        }
+
+        /* Speed display */
+        .speed-display {
+            font-size: 11px;
+            color: #a0a6bf;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="loading">🔍 Loading Real Analysis Data...</div>
+        
+        <!-- Tool Analysis Panel (Top Center) -->
+        <div id="toolPanel">
+            <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                <h4 style="margin: 0; font-size: 14px; color: #00ff88;">🔍 Analysis Tools</h4>
+                <div id="toolList" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <!-- Tools will be populated dynamically -->
+                </div>
+                <div style="display: flex; gap: 15px; font-size: 11px; opacity: 0.8; color: #a0a6bf;">
+                    <span>Active: <strong id="activeToolCount">2</strong></span>
+                    <span>Issues: <strong id="toolPanelIssues">438</strong></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Dashboard Panel -->
+        <div id="statsPanel">
+            <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                <h4 style="margin: 0; color: #00ff88; font-size: 14px;">📊 Codebase Analysis</h4>
+            </div>
+            
+            <div id="cityStats">
+                <div>🏢 Buildings: <span id="buildingCount">0</span></div>
+                <div>🔍 Analysis Tools: <span id="toolCount">0</span></div>
+                <div>⚠️ Total Issues: <span id="totalIssues">0</span></div>
+                <div>🎯 Risk Score: <span id="riskScore" class="risk-medium">0/10</span></div>
+                <div>🔒 Security Score: <span id="securityScore" class="risk-critical">0/10</span></div>
+                <div>📊 Quality Score: <span id="qualityScore" class="risk-medium">0/10</span></div>
+            </div>
+
+            
+            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(0,255,136,0.2);">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 11px;">
+                    <div class="stat-item">
+                        <div class="stat-value" id="criticalCount">0</div>
+                        <div class="stat-label" style="color: #800000;">Critical</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="highCount">0</div>
+                        <div class="stat-label" style="color: #ff6666;">High</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="mediumCount">0</div>
+                        <div class="stat-label" style="color: #ff8800;">Medium</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="lowCount">0</div>
+                        <div class="stat-label" style="color: #ffff00;">Low</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="infoCount">0</div>
+                        <div class="stat-label" style="color: #87ceeb;">Info</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Building Info Panel -->
+        <div id="buildingInfo">
+            <h3 id="buildingTitle">Building Details</h3>
+            <div id="buildingContent"></div>
+        </div>
+
+        <!-- Enhanced Control Panel -->
+        <div id="controlPanel">
+            <div id="controlToggle">
+                <h4 style="margin: 0; color: #00ff88;">🎮 Controls</h4>
+                <span id="controlArrow">🔼</span>
+            </div>
+            <div id="controlContent">
+                <div class="control-group">
+                    <label>Camera Speed:</label>
+                    <input type="range" id="speedSlider" min="0.1" max="5" step="0.1" value="1">
+                    <input type="number" id="speedInput" min="0.1" max="5" step="0.1" value="1">
+                    <div class="speed-display" id="speedDisplay">Speed: 1.0x</div>
+                </div>
+                
+                <div class="control-group">
+                    <label>Building Scale:</label>
+                    <input type="range" id="scaleSlider" min="0.1" max="3" step="0.1" value="1">
+                    <input type="number" id="scaleInput" min="0.1" max="3" step="0.1" value="1">
+                    <div class="speed-display" id="scaleDisplay">Scale: 1.0x</div>
+                </div>
+
+                <div class="control-group">
+                    <label>Building Transparency:</label>
+                    <input type="range" id="transparencySlider" min="0.1" max="1" step="0.05" value="0.85">
+                    <input type="number" id="transparencyInput" min="0.1" max="1" step="0.05" value="0.85">
+                    <div class="speed-display" id="transparencyDisplay">Opacity: 0.85</div>
+                </div>
+
+                <div class="control-group">
+                    <label>⚡ LOD Performance:</label>
+                    <div style="margin: 5px 0;">
+                        <label style="font-size: 11px;">High Detail Distance:</label>
+                        <input type="range" id="lodHighSlider" min="10" max="100" step="10" value="50" style="width: 100px;">
+                        <span id="lodHighDisplay" style="font-size: 10px; color: #ccc;">50</span>
+                    </div>
+                    <div style="margin: 5px 0;">
+                        <label style="font-size: 11px;">Medium Detail Distance:</label>
+                        <input type="range" id="lodMediumSlider" min="50" max="300" step="25" value="150" style="width: 100px;">
+                        <span id="lodMediumDisplay" style="font-size: 10px; color: #ccc;">150</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>⌨️ Keyboard Shortcuts:</label>
+                    <div style="font-size: 11px; color: #ccc; line-height: 1.4;">
+                        <div><strong>WASD</strong> - Move Camera</div>
+                        <div><strong>T</strong> - Toggle Tool Panel</div>
+                        <div><strong>Space</strong> - Start Guided Tour</div>
+                        <div><strong>R</strong> - Reset Camera</div>
+                        <div><strong>Mouse</strong> - Look Around</div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>💡 Lighting Controls:</label>
+                    <div style="margin: 5px 0;">
+                        <label style="font-size: 11px;">🌅 Ambient:</label>
+                        <input type="range" id="ambientSlider" min="0" max="1" step="0.1" value="0.6" style="width: 100px;">
+                    </div>
+                    <div style="margin: 5px 0;">
+                        <label style="font-size: 11px;">☀️ Sun:</label>
+                        <input type="range" id="sunSlider" min="0" max="2" step="0.1" value="0.8" style="width: 100px;">
+                    </div>
+                    <button class="control-button" id="toggleAllLights">💡 Toggle All</button>
+                </div>
+
+                <div class="control-group">
+                    <label>🌫️ Environment:</label>
+                    <div style="margin: 5px 0;">
+                        <label style="font-size: 11px;">🌫️ Fog Range:</label>
+                        <input type="range" id="fogSlider" min="200" max="1000" step="25" value="1000" style="width: 100px;">
+                    </div>
+                    <button class="control-button" id="toggleFog">🌫️ Toggle Fog</button>
+                    <button class="control-button" id="toggleWireframe">📐 Wireframe</button>
+                    <button class="control-button" id="exportView">📸 Export</button>
+                </div>
+
+                <div class="control-group">
+                    <button class="control-button" id="resetView">Reset View</button>
+                    <button class="control-button" id="startTour">🎯 Guided Tour</button>
+                    <button class="control-button" id="toggleHotspots">Show Hotspots</button>
+                </div>
+
+                <div class="control-group">
+                    <button class="control-button" id="viewTop">Top View</button>
+                    <button class="control-button" id="viewSide">Side View</button>
+                    <button class="control-button" id="viewIso">Isometric</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Legend Panel -->
+        <div id="legendPanel">
+            <div id="legendToggle">
+                <span>📋 Legend</span>
+                <span id="legendArrow">🔼</span>
+            </div>
+            <div id="legendContent">
+                <div style="margin-bottom: 15px; font-size: 12px; color: #00ff88;">
+                    <strong>Height:</strong> Lines of Code
+                </div>
+                
+                <!-- Heat Gradient Bar -->
+                <div style="margin-bottom: 15px;">
+                    <div style="font-size: 11px; margin-bottom: 5px; color: #e0e6ff;">Heat Gradient:</div>
+                    <div style="height: 20px; width: 100%; background: linear-gradient(to right, 
+                        #0066cc 0%,     /* Cool Blue - Clean */
+                        #0088aa 20%,    /* Teal */
+                        #00aa66 40%,    /* Green */
+                        #ccaa00 60%,    /* Yellow */
+                        #ff8800 80%,    /* Orange */
+                        #cc0000 100%    /* Dark Red - Critical */
+                    ); border-radius: 10px; border: 1px solid rgba(224,230,255,0.3);"></div>
+                    <div style="display: flex; justify-content: space-between; font-size: 9px; margin-top: 3px; color: #a0a6bf;">
+                        <span>Clean</span>
+                        <span>Few Issues</span>
+                        <span>Many Issues</span>
+                        <span>Critical</span>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+
+        <!-- Hotspots Panel -->
+        <div id="hotspotsPanel">
+            <h4 style="margin: 0 0 10px 0; color: #ff6666;">🔥 Security Hotspots</h4>
+            <div id="hotspotsList"></div>
+        </div>
+    </div>
+
+    <script>
+        let scene, camera, renderer, controls;
+        let buildings = [];
+        let realAnalysisData = null;
+        let currentFilter = 'all';
+        let moveSpeed = 1.0;
+        let buildingScale = 1.0;
+        let buildingTransparency = 0.85;
+        let showingHotspots = false;
+        let wireframeMode = false;
+        
+        // Environmental settings
+        let lightingSettings = {
+            ambient: { intensity: 0.6, enabled: true },
+            directional: { intensity: 0.8, enabled: true }
+        };
+        let fogSettings = { near: 100, far: 1000, enabled: true };
+
+        // Enhanced initialization with all main template functionality
+        function init() {
+            // Scene setup with enhanced environment (from experimental)
+            scene = new THREE.Scene();
+            scene.fog = new THREE.Fog(0x87CEEB, fogSettings.near, fogSettings.far);
+            
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 50, 100);
+            
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0x87CEEB, 0.3);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            document.getElementById('container').appendChild(renderer.domElement);
+            
+            // Enhanced lighting with names for control
+            const ambientLight = new THREE.AmbientLight(0x404040, lightingSettings.ambient.intensity);
+            ambientLight.name = 'ambientLight';
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, lightingSettings.directional.intensity);
+            directionalLight.name = 'directionalLight';
+            directionalLight.position.set(50, 100, 50);
+            directionalLight.castShadow = true;
+            directionalLight.shadow.mapSize.width = 2048;
+            directionalLight.shadow.mapSize.height = 2048;
+            scene.add(directionalLight);
+
+            // Enhanced ground (larger, darker - from experimental)
+            const groundGeometry = new THREE.PlaneGeometry(2000, 2000);
+            const groundMaterial = new THREE.MeshLambertMaterial({ color: 0x1a1a1a, transparent: true, opacity: 0.8 });
+            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = -Math.PI / 2;
+            ground.receiveShadow = true;
+            scene.add(ground);
+            
+            // Enhanced controls
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.maxPolarAngle = Math.PI / 2 - 0.1;
+            
+            // Setup all control handlers
+            setupControlHandlers();
+            setupWASDControls();
+            setupUIHandlers();
+            
+            // Load real data
+            loadRealAnalysisData();
+            
+            // Start animation loop
+            animate();
+        }
+
+        // Enhanced WASD Controls (from main template) - FIXED
+        function setupWASDControls() {
+            const keys = { w: false, a: false, s: false, d: false };
+            
+            document.addEventListener('keydown', (event) => {
+                switch(event.key.toLowerCase()) {
+                    case 'w': keys.w = true; break;
+                    case 'a': keys.a = true; break;
+                    case 's': keys.s = true; break;
+                    case 'd': keys.d = true; break;
+                    
+                    // Additional keyboard shortcuts
+                    case 't':
+                        event.preventDefault();
+                        // Toggle tool analysis panel visibility
+                        const toolPanel = document.getElementById('toolAnalysis');
+                        const currentDisplay = toolPanel.style.display;
+                        toolPanel.style.display = currentDisplay === 'none' ? 'block' : 'none';
+                        break;
+                        
+                    case ' ':
+                        event.preventDefault();
+                        // Spacebar: Start/stop guided tour
+                        if (window.startGuidedTour) {
+                            window.startGuidedTour();
+                        }
+                        break;
+                        
+                    case 'r':
+                        event.preventDefault();
+                        // R: Reset camera to initial position
+                        camera.position.set(100, 80, 100);
+                        controls.target.set(0, 0, 0);
+                        controls.update();
+                        // Close building info if open
+                        document.getElementById('buildingInfo').style.display = 'none';
+                        break;
+                }
+            });
+            
+            document.addEventListener('keyup', (event) => {
+                switch(event.key.toLowerCase()) {
+                    case 'w': keys.w = false; break;
+                    case 'a': keys.a = false; break;
+                    case 's': keys.s = false; break;
+                    case 'd': keys.d = false; break;
+                }
+            });
+            
+            // Camera-relative WASD movement - proper implementation
+            window.updateMovement = function() {
+                const forward = new THREE.Vector3();
+                camera.getWorldDirection(forward);
+                const right = new THREE.Vector3();
+                right.crossVectors(camera.up, forward);
+                
+                // Flatten vectors to horizontal plane (ignore Y component for ground-level movement)
+                const flatForward = new THREE.Vector3(forward.x, 0, forward.z).normalize();
+                const flatRight = new THREE.Vector3(right.x, 0, right.z).normalize();
+                
+                if (keys.w) {
+                    camera.position.addScaledVector(flatForward, moveSpeed);
+                    controls.target.addScaledVector(flatForward, moveSpeed);
+                }
+                if (keys.s) {
+                    camera.position.addScaledVector(flatForward, -moveSpeed);
+                    controls.target.addScaledVector(flatForward, -moveSpeed);
+                }
+                if (keys.a) {
+                    camera.position.addScaledVector(flatRight, moveSpeed);
+                    controls.target.addScaledVector(flatRight, moveSpeed);
+                }
+                if (keys.d) {
+                    camera.position.addScaledVector(flatRight, -moveSpeed);
+                    controls.target.addScaledVector(flatRight, -moveSpeed);
+                }
+            };
+        }
+
+        // Enhanced control handlers
+        function setupControlHandlers() {
+            // Speed controls
+            document.getElementById('speedSlider').addEventListener('input', (e) => {
+                moveSpeed = parseFloat(e.target.value);
+                document.getElementById('speedInput').value = moveSpeed;
+                document.getElementById('speedDisplay').textContent = `Speed: ${moveSpeed.toFixed(1)}x`;
+                controls.panSpeed = moveSpeed * 0.3;
+            });
+            
+            document.getElementById('speedInput').addEventListener('input', (e) => {
+                moveSpeed = parseFloat(e.target.value);
+                document.getElementById('speedSlider').value = moveSpeed;
+                document.getElementById('speedDisplay').textContent = `Speed: ${moveSpeed.toFixed(1)}x`;
+                controls.panSpeed = moveSpeed * 0.3;
+            });
+
+            // Building scale controls
+            document.getElementById('scaleSlider').addEventListener('input', (e) => {
+                buildingScale = parseFloat(e.target.value);
+                document.getElementById('scaleInput').value = buildingScale;
+                document.getElementById('scaleDisplay').textContent = `Scale: ${buildingScale.toFixed(1)}x`;
+                updateBuildingScale();
+            });
+            
+            document.getElementById('scaleInput').addEventListener('input', (e) => {
+                buildingScale = parseFloat(e.target.value);
+                document.getElementById('scaleSlider').value = buildingScale;
+                document.getElementById('scaleDisplay').textContent = `Scale: ${buildingScale.toFixed(1)}x`;
+                updateBuildingScale();
+            });
+
+            // Transparency controls
+            document.getElementById('transparencySlider').addEventListener('input', (e) => {
+                buildingTransparency = parseFloat(e.target.value);
+                document.getElementById('transparencyInput').value = buildingTransparency;
+                document.getElementById('transparencyDisplay').textContent = `Opacity: ${buildingTransparency.toFixed(2)}`;
+                updateBuildingTransparency();
+            });
+            
+            document.getElementById('transparencyInput').addEventListener('input', (e) => {
+                buildingTransparency = parseFloat(e.target.value);
+                document.getElementById('transparencySlider').value = buildingTransparency;
+                document.getElementById('transparencyDisplay').textContent = `Opacity: ${buildingTransparency.toFixed(2)}`;
+                updateBuildingTransparency();
+            });
+            
+            // LOD controls
+            document.getElementById('lodHighSlider').addEventListener('input', (e) => {
+                lodDistances.high = parseFloat(e.target.value);
+                document.getElementById('lodHighDisplay').textContent = lodDistances.high;
+                // Force LOD update on next frame
+                lodUpdateTimer = lodUpdateInterval;
+            });
+            
+            document.getElementById('lodMediumSlider').addEventListener('input', (e) => {
+                lodDistances.medium = parseFloat(e.target.value);
+                document.getElementById('lodMediumDisplay').textContent = lodDistances.medium;
+                // Force LOD update on next frame
+                lodUpdateTimer = lodUpdateInterval;
+            });
+
+            // View controls
+            document.getElementById('resetView').addEventListener('click', () => {
+                camera.position.set(0, 50, 100);
+                controls.target.set(0, 0, 0);
+                controls.update();
+            });
+
+            document.getElementById('viewTop').addEventListener('click', () => {
+                camera.position.set(0, 200, 0);
+                controls.target.set(0, 0, 0);
+                controls.update();
+            });
+
+            document.getElementById('viewSide').addEventListener('click', () => {
+                camera.position.set(200, 50, 0);
+                controls.target.set(0, 0, 0);
+                controls.update();
+            });
+
+            document.getElementById('viewIso').addEventListener('click', () => {
+                camera.position.set(100, 100, 100);
+                controls.target.set(0, 0, 0);
+                controls.update();
+            });
+
+            // Hotspots toggle
+            document.getElementById('toggleHotspots').addEventListener('click', () => {
+                showingHotspots = !showingHotspots;
+                const panel = document.getElementById('hotspotsPanel');
+                const button = document.getElementById('toggleHotspots');
+                if (showingHotspots) {
+                    panel.style.display = 'block';
+                    button.textContent = 'Hide Hotspots';
+                    button.classList.add('active');
+                    populateHotspots();
+                } else {
+                    panel.style.display = 'none';
+                    button.textContent = 'Show Hotspots';
+                    button.classList.remove('active');
+                }
+            });
+
+            // Lighting controls
+            document.getElementById('ambientSlider').addEventListener('input', (e) => {
+                adjustLighting('ambient', parseFloat(e.target.value));
+            });
+
+            document.getElementById('sunSlider').addEventListener('input', (e) => {
+                adjustLighting('directional', parseFloat(e.target.value));
+            });
+
+            document.getElementById('toggleAllLights').addEventListener('click', toggleAllLights);
+
+            // Environment controls
+            document.getElementById('fogSlider').addEventListener('input', (e) => {
+                adjustFog('far', parseFloat(e.target.value));
+            });
+
+            document.getElementById('toggleFog').addEventListener('click', toggleFog);
+            document.getElementById('toggleWireframe').addEventListener('click', toggleWireframe);
+            document.getElementById('exportView').addEventListener('click', exportView);
+            document.getElementById('startTour').addEventListener('click', startTour);
+        }
+
+        // Tool Analysis Panel Management
+        let activeTools = new Set(['semgrep', 'codeql']); // Initialize with available tools
+        
+        function setupToolPanel() {
+            if (!realAnalysisData) return;
+            
+            const toolList = document.getElementById('toolList');
+            const toolsUsed = realAnalysisData.summary.toolsCovered;
+            
+            // Clear existing tools
+            toolList.innerHTML = '';
+            
+            // Create tool items
+            toolsUsed.forEach(tool => {
+                const toolItem = document.createElement('div');
+                toolItem.className = 'tool-item active'; // Start with all tools active
+                toolItem.textContent = tool.charAt(0).toUpperCase() + tool.slice(1);
+                toolItem.dataset.tool = tool;
+                
+                toolItem.addEventListener('click', () => toggleTool(tool, toolItem));
+                toolList.appendChild(toolItem);
+            });
+            
+            updateToolPanelStats();
+        }
+        
+        function toggleTool(toolName, element) {
+            if (activeTools.has(toolName)) {
+                activeTools.delete(toolName);
+                element.classList.remove('active');
+            } else {
+                activeTools.add(toolName);
+                element.classList.add('active');
+            }
+            
+            updateToolPanelStats();
+            filterBuildings();
+        }
+        
+        function updateToolPanelStats() {
+            document.getElementById('activeToolCount').textContent = activeTools.size;
+            
+            // Calculate total issues from active tools
+            if (realAnalysisData) {
+                const activeIssues = realAnalysisData.issues.filter(issue => 
+                    activeTools.has(issue.toolName.toLowerCase())
+                );
+                document.getElementById('toolPanelIssues').textContent = activeIssues.length;
+            }
+        }
+
+        // Enhanced UI handlers
+        function setupUIHandlers() {
+            // Control panel toggle
+            document.getElementById('controlToggle').addEventListener('click', () => {
+                const content = document.getElementById('controlContent');
+                const arrow = document.getElementById('controlArrow');
+                if (content.style.display === 'none') {
+                    content.style.display = 'block';
+                    arrow.textContent = '🔼';
+                } else {
+                    content.style.display = 'none';
+                    arrow.textContent = '🔽';
+                }
+            });
+
+            // Legend toggle
+            document.getElementById('legendToggle').addEventListener('click', () => {
+                const content = document.getElementById('legendContent');
+                const arrow = document.getElementById('legendArrow');
+                if (content.style.display === 'none') {
+                    content.style.display = 'block';
+                    arrow.textContent = '🔼';
+                } else {
+                    content.style.display = 'none';
+                    arrow.textContent = '🔽';
+                }
+            });
+
+            // Tool filter buttons
+            document.querySelectorAll('.tool-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    document.querySelectorAll('.tool-button').forEach(b => b.classList.remove('active'));
+                    button.classList.add('active');
+                    currentFilter = button.dataset.tool;
+                    filterBuildings();
+                });
+            });
+
+            // Building click handler
+            renderer.domElement.addEventListener('click', onBuildingClick);
+        }
+
+        // Load real analysis data
+        async function loadRealAnalysisData() {
+            try {
+                const response = await fetch('./real-unified-analysis.json');
+                realAnalysisData = await response.json();
+                console.log('Real analysis data loaded:', realAnalysisData.summary);
+                
+                document.getElementById('loading').style.display = 'none';
+                
+                // Setup tool analysis panel
+                setupToolPanel();
+                
+                // Create buildings from real data with enhanced visual design
+                createBuildingsFromRealData();
+                
+                // Update statistics dashboard (after buildings are created)
+                updateStatsDashboard();
+                
+            } catch (error) {
+                console.error('Error loading real analysis data:', error);
+                document.getElementById('loading').innerHTML = '❌ Error loading real analysis data';
+            }
+        }
+
+        // Calculate and update statistics dashboard
+        function updateStatsDashboard() {
+            if (!realAnalysisData) return;
+            
+            const summary = realAnalysisData.summary;
+            const issues = realAnalysisData.issues;
+            
+            // Basic counts
+            document.getElementById('buildingCount').textContent = buildings.length;
+            document.getElementById('toolCount').textContent = summary.toolsCovered.length;
+            document.getElementById('totalIssues').textContent = summary.totalIssues;
+            
+            // Severity breakdown (case-insensitive)
+            const criticalCount = issues.filter(i => i.severity?.toLowerCase() === 'critical').length;
+            const highCount = issues.filter(i => i.severity?.toLowerCase() === 'high').length;
+            const mediumCount = issues.filter(i => i.severity?.toLowerCase() === 'medium').length;
+            const lowCount = issues.filter(i => i.severity?.toLowerCase() === 'low').length;
+            const infoCount = issues.filter(i => i.severity?.toLowerCase() === 'info').length;
+            
+            document.getElementById('criticalCount').textContent = criticalCount;
+            document.getElementById('highCount').textContent = highCount;
+            document.getElementById('mediumCount').textContent = mediumCount;
+            document.getElementById('lowCount').textContent = lowCount;
+            document.getElementById('infoCount').textContent = infoCount;
+            
+            // Calculate risk scores (0-10 scale)
+            const totalFiles = summary.filesAnalyzed;
+            const avgIssuesPerFile = summary.totalIssues / totalFiles;
+            
+            // Risk Score: Based on issue density and severity distribution
+            const riskScore = Math.min(10, 
+                (criticalCount * 2.5 + highCount * 2 + mediumCount * 1.5 + lowCount * 0.5 + infoCount * 0.25) / totalFiles * 2
+            );
+            
+            // Security Score: Focus on critical and high severity issues
+            const securityIssues = criticalCount + highCount;
+            const securityScore = Math.max(0, 10 - (securityIssues / totalFiles * 8));
+            
+            // Quality Score: General code health based on all issues
+            const qualityScore = Math.max(0, 10 - (avgIssuesPerFile * 1.5));
+            
+            // Update display with appropriate risk classes
+            const riskElement = document.getElementById('riskScore');
+            riskElement.textContent = `${riskScore.toFixed(1)}/10`;
+            riskElement.className = riskScore >= 7 ? 'risk-critical' : 
+                                   riskScore >= 5 ? 'risk-high' : 
+                                   riskScore >= 3 ? 'risk-medium' : 'risk-low';
+            
+            const securityElement = document.getElementById('securityScore');
+            securityElement.textContent = `${securityScore.toFixed(1)}/10`;
+            securityElement.className = securityScore <= 3 ? 'risk-critical' : 
+                                       securityScore <= 5 ? 'risk-high' : 
+                                       securityScore <= 7 ? 'risk-medium' : 'risk-low';
+            
+            const qualityElement = document.getElementById('qualityScore');
+            qualityElement.textContent = `${qualityScore.toFixed(1)}/10`;
+            qualityElement.className = qualityScore <= 3 ? 'risk-critical' : 
+                                      qualityScore <= 5 ? 'risk-high' : 
+                                      qualityScore <= 7 ? 'risk-medium' : 'risk-low';
+        }
+
+        // LOD (Level of Detail) System - Base geometries for different detail levels
+        let lodGeometryConfig = {
+            high: { width: 8, depth: 8, widthSegments: 4, heightSegments: 8, depthSegments: 4 },
+            medium: { width: 8, depth: 8, widthSegments: 2, heightSegments: 4, depthSegments: 2 },
+            low: { width: 8, depth: 8, widthSegments: 1, heightSegments: 1, depthSegments: 1 }
+        };
+        
+        let lodDistances = {
+            high: 50,    // Use high detail within 50 units
+            medium: 150  // Use medium detail within 150 units, low detail beyond
+        };
+
+        // Enhanced building creation with transparency and improved distribution
+        function createBuildingsFromRealData() {
+            if (!realAnalysisData || !realAnalysisData.issues) return;
+            
+            console.log('Creating buildings from real data...');
+            
+            // Group issues by file
+            const fileIssues = new Map();
+            realAnalysisData.issues.forEach(issue => {
+                const file = issue.entity.canonicalPath;
+                if (!fileIssues.has(file)) {
+                    fileIssues.set(file, []);
+                }
+                fileIssues.get(file).push(issue);
+            });
+            
+            console.log(`Processing ${fileIssues.size} files with issues`);
+            
+            // Enhanced building distribution (from experimental)
+            const files = Array.from(fileIssues.keys());
+            const gridSize = Math.ceil(Math.sqrt(files.length));
+            const spacing = 25;
+            
+            files.forEach((file, index) => {
+                const issues = fileIssues.get(file);
+                const row = Math.floor(index / gridSize);
+                const col = index % gridSize;
+                
+                // Calculate position with some organic variation
+                const x = (col - gridSize / 2) * spacing + (Math.random() - 0.5) * 5;
+                const z = (row - gridSize / 2) * spacing + (Math.random() - 0.5) * 5;
+                
+                // Count issues by severity (case-insensitive)
+                const criticalIssues = issues.filter(i => i.severity?.toLowerCase() === 'critical').length;
+                const highIssues = issues.filter(i => i.severity?.toLowerCase() === 'high').length;
+                const mediumIssues = issues.filter(i => i.severity?.toLowerCase() === 'medium').length;
+                const lowIssues = issues.filter(i => i.severity?.toLowerCase() === 'low').length;
+                const infoIssues = issues.filter(i => i.severity?.toLowerCase() === 'info').length;
+                
+                // Height based on lines of code (estimated from file analysis)
+                const estimatedLOC = issues.length > 0 ? 
+                    Math.max(...issues.map(i => i.line || 50)) : 50; // Use highest line number as LOC estimate
+                
+                // Logarithmic scaling for balanced city skyline
+                let height = Math.max(5, Math.min(40, Math.log10(estimatedLOC) * 15));
+                
+                // Enhanced color calculation based on weighted severity and total issue count
+                const totalIssues = issues.length;
+                
+                let color, opacity;
+                if (totalIssues === 0) {
+                    // Cool Blue for completely clean files (no issues)
+                    color = new THREE.Color(0.0, 0.4, 0.8); // Pure cool blue
+                    opacity = 0.8;
+                } else {
+                    // Calculate heat score based on weighted severity and issue count
+                    const severityWeight = criticalIssues * 10 + highIssues * 5 + mediumIssues * 2 + lowIssues * 1 + infoIssues * 0.3;
+                    const avgSeverityWeight = severityWeight / totalIssues;
+                    
+                    // Heat intensity: combination of issue count and severity
+                    const countHeat = Math.min(1, Math.log10(totalIssues + 1) / Math.log10(21)); // 0-1 based on issue count
+                    const severityHeat = Math.min(1, avgSeverityWeight / 10); // 0-1 based on severity
+                    const heatScore = (countHeat * 0.4) + (severityHeat * 0.6); // Weighted toward severity
+                    
+                    // Heat-based color gradient: Cool Blue → Teal → Green → Yellow → Orange → Red → Dark Red
+                    if (heatScore < 0.15) {
+                        // Cool: Light Blue to Teal
+                        const t = heatScore / 0.15;
+                        color = new THREE.Color().setRGB(
+                            0.2 + t * 0.3,      // R: 0.2 → 0.5
+                            0.6 + t * 0.2,      // G: 0.6 → 0.8  
+                            0.9 - t * 0.1       // B: 0.9 → 0.8
+                        );
+                        opacity = 0.5 + heatScore * 2; // 0.5-0.8 range
+                    } else if (heatScore < 0.35) {
+                        // Warm: Teal to Green
+                        const t = (heatScore - 0.15) / 0.2;
+                        color = new THREE.Color().setRGB(
+                            0.5 - t * 0.2,      // R: 0.5 → 0.3
+                            0.8,                // G: stays 0.8
+                            0.8 - t * 0.6       // B: 0.8 → 0.2
+                        );
+                        opacity = 0.6 + heatScore * 1.5;
+                    } else if (heatScore < 0.55) {
+                        // Getting Hot: Green to Yellow
+                        const t = (heatScore - 0.35) / 0.2;
+                        color = new THREE.Color().setRGB(
+                            0.3 + t * 0.7,      // R: 0.3 → 1.0
+                            0.8 + t * 0.2,      // G: 0.8 → 1.0
+                            0.2 - t * 0.2       // B: 0.2 → 0.0
+                        );
+                        opacity = 0.65 + heatScore * 1.2;
+                    } else if (heatScore < 0.75) {
+                        // Hot: Yellow to Orange
+                        const t = (heatScore - 0.55) / 0.2;
+                        color = new THREE.Color().setRGB(
+                            1.0,                // R: stays 1.0
+                            1.0 - t * 0.3,      // G: 1.0 → 0.7
+                            0.0                 // B: stays 0.0
+                        );
+                        opacity = 0.7 + heatScore * 1.1;
+                    } else if (heatScore < 0.9) {
+                        // Very Hot: Orange to Red
+                        const t = (heatScore - 0.75) / 0.15;
+                        color = new THREE.Color().setRGB(
+                            1.0,                // R: stays 1.0
+                            0.7 - t * 0.5,      // G: 0.7 → 0.2
+                            0.0                 // B: stays 0.0
+                        );
+                        opacity = 0.75 + heatScore * 1.0;
+                    } else {
+                        // Extremely Hot: Red to Dark Red
+                        const t = (heatScore - 0.9) / 0.1;
+                        color = new THREE.Color().setRGB(
+                            1.0 - t * 0.3,      // R: 1.0 → 0.7
+                            0.2 - t * 0.2,      // G: 0.2 → 0.0
+                            0.0                 // B: stays 0.0
+                        );
+                        opacity = 0.8 + heatScore * 0.2; // 0.8-1.0 range
+                    }
+                }
+                
+                // Enhanced building creation with LOD and intensity-based transparency
+                const geometry = new THREE.BoxGeometry(8, height, 8); // Use proper height directly
+                
+                // Calculate initial opacity using the same logic as updateBuildingTransparency
+                let finalOpacity;
+                if (buildingTransparency >= 0.99) {
+                    finalOpacity = 1.0;
+                } else {
+                    finalOpacity = opacity * (buildingTransparency / 0.85);
+                }
+                
+                const material = new THREE.MeshLambertMaterial({ 
+                    color: color,
+                    transparent: finalOpacity < 1.0,
+                    opacity: finalOpacity
+                });
+                
+                const building = new THREE.Mesh(geometry, material);
+                building.position.set(x, height / 2, z);
+                building.castShadow = true;
+                building.receiveShadow = true;
+                
+                // Store metadata
+                building.userData = {
+                    file: file,
+                    issues: issues,
+                    issueCount: issues.length,
+                    criticalCount: criticalIssues,
+                    highCount: highIssues,
+                    mediumCount: mediumIssues,
+                    lowCount: lowIssues,
+                    infoCount: infoIssues,
+                    estimatedLOC: estimatedLOC,
+                    originalOpacity: opacity,  // Store original intensity-based opacity for transparency control
+                    currentLOD: 'medium'       // Initialize LOD level
+                };
+                
+                scene.add(building);
+                buildings.push(building);
+            });
+            
+            console.log(`Created ${buildings.length} buildings`);
+        }
+
+        // Selection tracking
+        let selectedBuilding = null;
+        let buildingOutline = null;
+
+        // Enhanced building click handler with visual selection
+        function onBuildingClick(event) {
+            const mouse = new THREE.Vector2();
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            
+            const raycaster = new THREE.Raycaster();
+            raycaster.setFromCamera(mouse, camera);
+            
+            const intersects = raycaster.intersectObjects(buildings);
+            
+            if (intersects.length > 0) {
+                const building = intersects[0].object;
+                selectBuilding(building);
+                showBuildingInfo(building);
+            } else {
+                clearBuildingSelection();
+                document.getElementById('buildingInfo').style.display = 'none';
+            }
+        }
+
+        // Select building with visual effects
+        function selectBuilding(building) {
+            // Clear previous selection
+            clearBuildingSelection();
+            
+            // Store selected building
+            selectedBuilding = building;
+            
+            // Create outline for selected building
+            createBuildingOutline(building);
+            
+            // Fade all other buildings
+            fadeOtherBuildings(building);
+        }
+
+        // Create bold outline around selected building
+        function createBuildingOutline(building) {
+            if (buildingOutline) {
+                scene.remove(buildingOutline);
+            }
+            
+            // Create a slightly larger wireframe geometry for the outline
+            const geometry = building.geometry.clone();
+            geometry.scale(1.02, 1.002, 1.02); // Slightly larger than the building
+            
+            const wireframeMaterial = new THREE.MeshBasicMaterial({
+                color: 0x00ff88, // Bright green outline
+                wireframe: true,
+                transparent: true,
+                opacity: 1.0,
+                linewidth: 3
+            });
+            
+            buildingOutline = new THREE.Mesh(geometry, wireframeMaterial);
+            buildingOutline.position.copy(building.position);
+            buildingOutline.renderOrder = 1; // Render on top
+            
+            scene.add(buildingOutline);
+        }
+
+        // Fade all buildings except the selected one
+        function fadeOtherBuildings(selectedBuilding) {
+            // Just update transparency - the logic is now in updateBuildingTransparency()
+            updateBuildingTransparency();
+        }
+
+        // Clear building selection and restore normal appearance
+        function clearBuildingSelection() {
+            // Remove outline
+            if (buildingOutline) {
+                scene.remove(buildingOutline);
+                buildingOutline = null;
+            }
+            
+            // Clear selection and restore normal transparency
+            selectedBuilding = null;
+            updateBuildingTransparency();
+        }
+
+        // Enhanced building info display with tool breakdown
+        function showBuildingInfo(building) {
+            const data = building.userData;
+            const panel = document.getElementById('buildingInfo');
+            const title = document.getElementById('buildingTitle');
+            const content = document.getElementById('buildingContent');
+            
+            title.textContent = `📁 ${data.file.split('/').pop()}`;
+            
+            // Calculate tool breakdown
+            const toolBreakdown = {};
+            data.issues.forEach(issue => {
+                const toolName = issue.toolName || 'Unknown';
+                if (!toolBreakdown[toolName]) {
+                    toolBreakdown[toolName] = { count: 0, critical: 0, high: 0, medium: 0, low: 0, info: 0 };
+                }
+                toolBreakdown[toolName].count++;
+                const severity = issue.severity?.toLowerCase();
+                if (severity === 'critical') toolBreakdown[toolName].critical++;
+                else if (severity === 'high') toolBreakdown[toolName].high++;
+                else if (severity === 'medium') toolBreakdown[toolName].medium++;
+                else if (severity === 'low') toolBreakdown[toolName].low++;
+                else if (severity === 'info') toolBreakdown[toolName].info++;
+            });
+            
+            let html = `
+                <div style="margin-bottom: 10px;">
+                    <strong>File:</strong> ${data.file}<br>
+                    <strong>Lines of Code:</strong> ${data.estimatedLOC}<br>
+                    <strong>Total Issues:</strong> ${data.issueCount}
+                </div>
+                
+                <div style="margin-bottom: 10px;">
+                    <div style="color: #800000;">🔴 Critical: ${data.criticalCount}</div>
+                    <div style="color: #ff6666;">🔴 High: ${data.highCount}</div>
+                    <div style="color: #ff8800;">🟠 Medium: ${data.mediumCount}</div>
+                    <div style="color: #ffff00;">🟡 Low: ${data.lowCount}</div>
+                    <div style="color: #87ceeb;">ℹ️ Info: ${data.infoCount}</div>
+                </div>
+                
+                <div style="margin-bottom: 10px;">
+                    <strong>🔧 Tool Breakdown:</strong><br>
+            `;
+            
+            Object.entries(toolBreakdown).forEach(([toolName, breakdown]) => {
+                const toolIcon = toolName === 'Semgrep' ? '🔍' : toolName === 'CodeQL' ? '🔎' : '🛠️';
+                html += `<div style="margin: 3px 0; font-size: 11px; display: flex; justify-content: space-between; align-items: center;">
+                    <span>${toolIcon} ${toolName}: <strong>${breakdown.count}</strong></span>
+                    <span style="font-size: 10px;">
+                        ${breakdown.critical ? `🔴${breakdown.critical}` : ''}
+                        ${breakdown.high ? `🔴${breakdown.high}` : ''}
+                        ${breakdown.medium ? `🟠${breakdown.medium}` : ''}
+                        ${breakdown.low ? `🟡${breakdown.low}` : ''}
+                        ${breakdown.info ? `ℹ️${breakdown.info}` : ''}
+                    </span>
+                </div>`;
+            });
+            
+            html += `</div>
+                <div style="max-height: 150px; overflow-y: auto; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 8px;">
+                    <strong>Recent Issues:</strong><br>
+            `;
+            
+            data.issues.slice(0, 5).forEach(issue => {
+                const severity = issue.severity ? issue.severity.charAt(0).toUpperCase() + issue.severity.slice(1).toLowerCase() : 'Unknown';
+                const severityColor = issue.severity?.toLowerCase() === 'critical' ? '#800000' :
+                                     issue.severity?.toLowerCase() === 'high' ? '#ff6666' :
+                                     issue.severity?.toLowerCase() === 'medium' ? '#ff8800' :
+                                     issue.severity?.toLowerCase() === 'low' ? '#ffff00' :
+                                     issue.severity?.toLowerCase() === 'info' ? '#87ceeb' : '#cccccc';
+                
+                const toolIcon = issue.toolName === 'Semgrep' ? '🔍' : issue.toolName === 'CodeQL' ? '🔎' : '🛠️';
+                
+                html += `<div style="margin: 5px 0; padding: 5px; background: rgba(255,255,255,0.1); border-radius: 4px;">
+                    <div style="font-weight: bold; font-size: 12px;">${issue.title}</div>
+                    <div style="font-size: 11px; color: #ccc;">
+                        Line ${issue.line} • ${toolIcon} ${issue.toolName} • 
+                        <span style="color: ${severityColor};">${severity}</span>
+                    </div>
+                </div>`;
+            });
+            
+            if (data.issues.length > 5) {
+                html += `<div style="font-size: 11px; color: #888;">...and ${data.issues.length - 5} more</div>`;
+            }
+            
+            html += '</div>';
+            content.innerHTML = html;
+            panel.style.display = 'block';
+        }
+
+        // Filter buildings by active tools
+        function filterBuildings() {
+            buildings.forEach(building => {
+                const data = building.userData;
+                let visible = true;
+                
+                // Check if building has issues from any active tool
+                if (activeTools.size > 0) {
+                    visible = data.issues.some(issue => 
+                        activeTools.has(issue.toolName.toLowerCase())
+                    );
+                } else {
+                    visible = false; // Hide all buildings if no tools are active
+                }
+                
+                building.visible = visible;
+            });
+        }
+
+        // Update building scale
+        function updateBuildingScale() {
+            buildings.forEach(building => {
+                building.scale.set(buildingScale, buildingScale, buildingScale);
+            });
+        }
+
+        // Update building transparency
+        function updateBuildingTransparency() {
+            buildings.forEach(building => {
+                if (building.material && building.userData) {
+                    // Get the original intensity-based opacity stored in userData
+                    const originalOpacity = building.userData.originalOpacity || 0.7;
+                    
+                    // Calculate the base opacity according to transparency setting
+                    let baseOpacity;
+                    if (buildingTransparency >= 0.99) { // Treat 1.0 as fully opaque
+                        baseOpacity = 1.0;
+                    } else {
+                        // Scale the original opacity by the transparency setting
+                        // When transparency is 0.85 (default), use original intensity-based opacity
+                        // When transparency is lower, make more transparent
+                        baseOpacity = originalOpacity * (buildingTransparency / 0.85);
+                    }
+                    
+                    // Apply selection fading if this building is not selected
+                    let finalOpacity = baseOpacity;
+                    if (selectedBuilding && building !== selectedBuilding) {
+                        finalOpacity = baseOpacity * 0.5; // 50% fade for non-selected buildings
+                    }
+                    
+                    building.material.opacity = finalOpacity;
+                    building.material.transparent = finalOpacity < 1.0;
+                }
+            });
+        }
+        
+        // LOD Update System
+        let lodUpdateTimer = 0;
+        const lodUpdateInterval = 30; // Update LOD every 30 frames for performance
+        
+        function updateBuildingLOD() {
+            lodUpdateTimer++;
+            if (lodUpdateTimer < lodUpdateInterval) return;
+            lodUpdateTimer = 0;
+            
+            const cameraPosition = camera.position;
+            
+            buildings.forEach(building => {
+                const distance = building.position.distanceTo(cameraPosition);
+                let targetConfig, currentLOD;
+                
+                if (distance < lodDistances.high) {
+                    targetConfig = lodGeometryConfig.high;
+                    currentLOD = 'high';
+                } else if (distance < lodDistances.medium) {
+                    targetConfig = lodGeometryConfig.medium;
+                    currentLOD = 'medium';
+                } else {
+                    targetConfig = lodGeometryConfig.low;
+                    currentLOD = 'low';
+                }
+                
+                // Only update if LOD level has changed
+                if (building.userData.currentLOD !== currentLOD) {
+                    const height = building.geometry.parameters.height; // Get original height
+                    const newGeometry = new THREE.BoxGeometry(
+                        targetConfig.width,
+                        height,
+                        targetConfig.depth,
+                        targetConfig.widthSegments,
+                        targetConfig.heightSegments,
+                        targetConfig.depthSegments
+                    );
+                    
+                    building.geometry.dispose(); // Clean up old geometry
+                    building.geometry = newGeometry;
+                    building.userData.currentLOD = currentLOD;
+                }
+            });
+        }
+
+        // Populate hotspots panel
+        function populateHotspots() {
+            if (!realAnalysisData || !realAnalysisData.hotspots) return;
+            
+            const list = document.getElementById('hotspotsList');
+            list.innerHTML = '';
+            
+            realAnalysisData.hotspots.slice(0, 10).forEach(hotspot => {
+                const item = document.createElement('div');
+                item.className = 'hotspot-item';
+                item.innerHTML = `
+                    <div class="hotspot-file">${hotspot.file.split('/').pop()}</div>
+                    <div class="hotspot-count">${hotspot.issueCount} issues • ${hotspot.toolsCovered.join(', ')}</div>
+                `;
+                
+                item.addEventListener('click', () => {
+                    // Find and focus on this building
+                    const building = buildings.find(b => b.userData.file === hotspot.file);
+                    if (building) {
+                        camera.position.set(
+                            building.position.x + 30,
+                            building.position.y + 20,
+                            building.position.z + 30
+                        );
+                        controls.target.copy(building.position);
+                        controls.update();
+                        showBuildingInfo(building);
+                    }
+                });
+                
+                list.appendChild(item);
+            });
+        }
+
+        // Animation loop - FIXED with LOD
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Update WASD movement
+            if (window.updateMovement) {
+                window.updateMovement();
+            }
+            
+            // Update LOD system for performance
+            if (buildings.length > 0) {
+                updateBuildingLOD();
+            }
+            
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // Handle window resize
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // Environmental control functions
+        function adjustLighting(type, intensity) {
+            lightingSettings[type].intensity = intensity;
+            
+            switch(type) {
+                case 'ambient':
+                    const ambientLight = scene.getObjectByName('ambientLight');
+                    if (ambientLight) ambientLight.intensity = intensity;
+                    break;
+                    
+                case 'directional':
+                    const directionalLight = scene.getObjectByName('directionalLight');
+                    if (directionalLight) directionalLight.intensity = intensity;
+                    break;
+            }
+        }
+
+        function toggleAllLights() {
+            const allEnabled = Object.values(lightingSettings).every(light => light.enabled);
+            
+            Object.keys(lightingSettings).forEach(lightType => {
+                lightingSettings[lightType].enabled = !allEnabled;
+                const intensity = !allEnabled ? lightingSettings[lightType].intensity : 0;
+                
+                switch(lightType) {
+                    case 'ambient':
+                        const ambientLight = scene.getObjectByName('ambientLight');
+                        if (ambientLight) ambientLight.intensity = intensity;
+                        break;
+                        
+                    case 'directional':
+                        const directionalLight = scene.getObjectByName('directionalLight');
+                        if (directionalLight) directionalLight.intensity = intensity;
+                        break;
+                }
+            });
+        }
+
+        function adjustFog(property, value) {
+            const fogValue = parseFloat(value);
+            
+            if (property === 'near') {
+                if (scene.fog) scene.fog.near = fogValue;
+                fogSettings.near = fogValue;
+            } else if (property === 'far') {
+                if (scene.fog) scene.fog.far = fogValue;
+                fogSettings.far = fogValue;
+            }
+        }
+
+        function toggleFog() {
+            fogSettings.enabled = !fogSettings.enabled;
+            
+            if (fogSettings.enabled) {
+                scene.fog = new THREE.Fog(0x87CEEB, fogSettings.near, fogSettings.far);
+            } else {
+                scene.fog = null;
+            }
+        }
+
+        function toggleWireframe() {
+            wireframeMode = !wireframeMode;
+            buildings.forEach(building => {
+                if (building && building.material) {
+                    building.material.wireframe = wireframeMode;
+                }
+            });
+        }
+
+        function exportView() {
+            // Take screenshot of current view
+            renderer.render(scene, camera);
+            const imgData = renderer.domElement.toDataURL('image/png');
+            
+            // Create download link
+            const link = document.createElement('a');
+            link.download = `topolop-view-${Date.now()}.png`;
+            link.href = imgData;
+            link.click();
+            
+            console.log('📸 View exported successfully');
+        }
+
+        function startTour() {
+            alert('🎯 Guided tour functionality coming soon!');
+        }
+
+        // Initialize everything
+        window.addEventListener('resize', onWindowResize);
+        init();
+    </script>
+</body>
+</html>

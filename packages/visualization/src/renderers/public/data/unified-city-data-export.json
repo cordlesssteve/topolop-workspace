@@ -1,0 +1,717 @@
+{
+  "cityLayout": {
+    "buildings": [
+      {
+        "id": "building-1",
+        "name": "auth.ts",
+        "x": -150,
+        "y": 0,
+        "z": -150,
+        "height": 45,
+        "width": 20,
+        "depth": 12,
+        "baseColor": "#E0E0E0",
+        "toolColor": "#ff4444",
+        "finalColor": "#ff4444",
+        "texture": {
+          "type": "security-steel",
+          "pattern": "warning-stripes",
+          "intensity": 0.9
+        },
+        "issueCount": 5,
+        "toolsDetected": [
+          "sonarqube",
+          "semgrep",
+          "checkmarx"
+        ],
+        "riskScore": 8.5,
+        "clickable": true,
+        "shape": "pyramid",
+        "details": {
+          "file": "auth.ts",
+          "canonicalPath": "src/services/auth.ts",
+          "totalIssues": 5,
+          "fileType": "TypeScript Service",
+          "recommendedAction": "Security review required",
+          "toolBreakdown": [
+            {
+              "toolName": "sonarqube",
+              "displayName": "SonarQube",
+              "color": "#2196F3",
+              "issueCount": 2,
+              "severityBreakdown": {
+                "critical": 1,
+                "high": 1
+              },
+              "topIssues": [
+                {
+                  "type": "SQL Injection Risk",
+                  "severity": "critical",
+                  "description": "Potential SQL injection vulnerability",
+                  "line": 42
+                },
+                {
+                  "type": "Authentication Bypass",
+                  "severity": "high",
+                  "description": "Weak authentication logic",
+                  "line": 78
+                }
+              ]
+            },
+            {
+              "toolName": "semgrep",
+              "displayName": "Semgrep",
+              "color": "#FF6B35",
+              "issueCount": 2,
+              "severityBreakdown": {
+                "critical": 1,
+                "medium": 1
+              },
+              "topIssues": [
+                {
+                  "type": "Hardcoded Secret",
+                  "severity": "critical",
+                  "description": "API key found in code",
+                  "line": 15
+                },
+                {
+                  "type": "Insecure Randomness",
+                  "severity": "medium",
+                  "description": "Weak random number generation",
+                  "line": 156
+                }
+              ]
+            },
+            {
+              "toolName": "checkmarx",
+              "displayName": "Checkmarx",
+              "color": "#9C27B0",
+              "issueCount": 1,
+              "severityBreakdown": {
+                "high": 1
+              },
+              "topIssues": [
+                {
+                  "type": "Command Injection",
+                  "severity": "high",
+                  "description": "User input in system command",
+                  "line": 201
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": "building-2",
+        "name": "user.ts",
+        "x": 0,
+        "y": 0,
+        "z": -150,
+        "height": 32,
+        "width": 18,
+        "depth": 10,
+        "baseColor": "#E0E0E0",
+        "toolColor": "#ffaa00",
+        "finalColor": "#ffaa00",
+        "texture": {
+          "type": "modern-glass",
+          "pattern": "gradient",
+          "intensity": 0.7
+        },
+        "issueCount": 3,
+        "toolsDetected": [
+          "sonarqube",
+          "codeclimate"
+        ],
+        "riskScore": 4.5,
+        "clickable": true,
+        "shape": "cylinder",
+        "details": {
+          "file": "user.ts",
+          "canonicalPath": "src/models/user.ts",
+          "totalIssues": 3,
+          "fileType": "TypeScript Model",
+          "recommendedAction": "Code quality improvement",
+          "toolBreakdown": [
+            {
+              "toolName": "sonarqube",
+              "displayName": "SonarQube",
+              "color": "#2196F3",
+              "issueCount": 1,
+              "severityBreakdown": {
+                "high": 1
+              },
+              "topIssues": [
+                {
+                  "type": "Null Pointer Risk",
+                  "severity": "high",
+                  "description": "Potential null dereference",
+                  "line": 67
+                }
+              ]
+            },
+            {
+              "toolName": "codeclimate",
+              "displayName": "Code Climate",
+              "color": "#4CAF50",
+              "issueCount": 2,
+              "severityBreakdown": {
+                "medium": 2
+              },
+              "topIssues": [
+                {
+                  "type": "Cognitive Complexity",
+                  "severity": "medium",
+                  "description": "Function too complex",
+                  "line": 89
+                },
+                {
+                  "type": "Duplicate Code",
+                  "severity": "medium",
+                  "description": "Similar block found",
+                  "line": 134
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": "building-3",
+        "name": "utils.ts",
+        "x": 150,
+        "y": 0,
+        "z": -150,
+        "height": 18,
+        "width": 15,
+        "depth": 8,
+        "baseColor": "#E0E0E0",
+        "toolColor": "#4488ff",
+        "finalColor": "#4488ff",
+        "texture": {
+          "type": "utility-metal",
+          "pattern": "grid",
+          "intensity": 0.6
+        },
+        "issueCount": 1,
+        "toolsDetected": [
+          "deepsource"
+        ],
+        "riskScore": 1.5,
+        "clickable": true,
+        "shape": "box",
+        "details": {
+          "file": "utils.ts",
+          "canonicalPath": "src/utils/utils.ts",
+          "totalIssues": 1,
+          "fileType": "TypeScript Utility",
+          "recommendedAction": "Minor cleanup suggested",
+          "toolBreakdown": [
+            {
+              "toolName": "deepsource",
+              "displayName": "DeepSource",
+              "color": "#7B1FA2",
+              "issueCount": 1,
+              "severityBreakdown": {
+                "low": 1
+              },
+              "topIssues": [
+                {
+                  "type": "Unused Import",
+                  "severity": "low",
+                  "description": "Import statement not used",
+                  "line": 8
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": "building-4",
+        "name": "payment.ts",
+        "x": -150,
+        "y": 0,
+        "z": 0,
+        "height": 38,
+        "width": 19,
+        "depth": 11,
+        "baseColor": "#E0E0E0",
+        "toolColor": "#ff6b35",
+        "finalColor": "#ff6b35",
+        "texture": {
+          "type": "financial-secure",
+          "pattern": "encrypted",
+          "intensity": 0.85
+        },
+        "issueCount": 4,
+        "toolsDetected": [
+          "semgrep",
+          "veracode",
+          "checkmarx"
+        ],
+        "riskScore": 7.2,
+        "clickable": true,
+        "shape": "pyramid",
+        "details": {
+          "file": "payment.ts",
+          "canonicalPath": "src/services/payment.ts",
+          "totalIssues": 4,
+          "fileType": "TypeScript Payment Service",
+          "recommendedAction": "Security audit required",
+          "toolBreakdown": [
+            {
+              "toolName": "semgrep",
+              "displayName": "Semgrep",
+              "color": "#FF6B35",
+              "issueCount": 2,
+              "severityBreakdown": {
+                "critical": 1,
+                "high": 1
+              },
+              "topIssues": [
+                {
+                  "type": "PCI DSS Violation",
+                  "severity": "critical",
+                  "description": "Credit card data not encrypted",
+                  "line": 92
+                },
+                {
+                  "type": "Weak Encryption",
+                  "severity": "high",
+                  "description": "Deprecated crypto algorithm",
+                  "line": 145
+                }
+              ]
+            },
+            {
+              "toolName": "veracode",
+              "displayName": "Veracode",
+              "color": "#1976D2",
+              "issueCount": 1,
+              "severityBreakdown": {
+                "critical": 1
+              },
+              "topIssues": [
+                {
+                  "type": "Buffer Overflow",
+                  "severity": "critical",
+                  "description": "Memory corruption possible",
+                  "line": 178
+                }
+              ]
+            },
+            {
+              "toolName": "checkmarx",
+              "displayName": "Checkmarx",
+              "color": "#9C27B0",
+              "issueCount": 1,
+              "severityBreakdown": {
+                "high": 1
+              },
+              "topIssues": [
+                {
+                  "type": "XSS Vulnerability",
+                  "severity": "high",
+                  "description": "Unescaped user input",
+                  "line": 203
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": "building-5",
+        "name": "api.ts",
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "height": 28,
+        "width": 17,
+        "depth": 9,
+        "baseColor": "#E0E0E0",
+        "toolColor": "#44ff44",
+        "finalColor": "#44ff44",
+        "texture": {
+          "type": "api-gateway",
+          "pattern": "network",
+          "intensity": 0.75
+        },
+        "issueCount": 2,
+        "toolsDetected": [
+          "codeql",
+          "sonarqube"
+        ],
+        "riskScore": 3.8,
+        "clickable": true,
+        "shape": "cone",
+        "details": {
+          "file": "api.ts",
+          "canonicalPath": "src/controllers/api.ts",
+          "totalIssues": 2,
+          "fileType": "TypeScript API Controller",
+          "recommendedAction": "Performance optimization",
+          "toolBreakdown": [
+            {
+              "toolName": "codeql",
+              "displayName": "CodeQL",
+              "color": "#FF5722",
+              "issueCount": 1,
+              "severityBreakdown": {
+                "medium": 1
+              },
+              "topIssues": [
+                {
+                  "type": "Path Traversal",
+                  "severity": "medium",
+                  "description": "Potential directory traversal",
+                  "line": 56
+                }
+              ]
+            },
+            {
+              "toolName": "sonarqube",
+              "displayName": "SonarQube",
+              "color": "#2196F3",
+              "issueCount": 1,
+              "severityBreakdown": {
+                "medium": 1
+              },
+              "topIssues": [
+                {
+                  "type": "Performance Issue",
+                  "severity": "medium",
+                  "description": "Inefficient database query",
+                  "line": 123
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": "building-6",
+        "name": "config.js",
+        "x": 150,
+        "y": 0,
+        "z": 0,
+        "height": 22,
+        "width": 14,
+        "depth": 7,
+        "baseColor": "#E0E0E0",
+        "toolColor": "#ffc107",
+        "finalColor": "#ffc107",
+        "texture": {
+          "type": "config-bronze",
+          "pattern": "settings",
+          "intensity": 0.5
+        },
+        "issueCount": 3,
+        "toolsDetected": [
+          "codacy",
+          "deepsource"
+        ],
+        "riskScore": 2.9,
+        "clickable": true,
+        "shape": "cylinder",
+        "details": {
+          "file": "config.js",
+          "canonicalPath": "config/database.config.js",
+          "totalIssues": 3,
+          "fileType": "JavaScript Configuration",
+          "recommendedAction": "Configuration cleanup",
+          "toolBreakdown": [
+            {
+              "toolName": "codacy",
+              "displayName": "Codacy",
+              "color": "#607D8B",
+              "issueCount": 2,
+              "severityBreakdown": {
+                "low": 2
+              },
+              "topIssues": [
+                {
+                  "type": "Magic Number",
+                  "severity": "low",
+                  "description": "Hard-coded configuration value",
+                  "line": 23
+                },
+                {
+                  "type": "Long Line",
+                  "severity": "low",
+                  "description": "Line exceeds length limit",
+                  "line": 67
+                }
+              ]
+            },
+            {
+              "toolName": "deepsource",
+              "displayName": "DeepSource",
+              "color": "#7B1FA2",
+              "issueCount": 1,
+              "severityBreakdown": {
+                "medium": 1
+              },
+              "topIssues": [
+                {
+                  "type": "Environment Variable",
+                  "severity": "medium",
+                  "description": "Sensitive data in config",
+                  "line": 45
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": "building-7",
+        "name": "test.spec.js",
+        "x": -150,
+        "y": 0,
+        "z": 150,
+        "height": 15,
+        "width": 13,
+        "depth": 6,
+        "baseColor": "#E0E0E0",
+        "toolColor": "#00bcd4",
+        "finalColor": "#00bcd4",
+        "texture": {
+          "type": "test-glass",
+          "pattern": "checkered",
+          "intensity": 0.4
+        },
+        "issueCount": 1,
+        "toolsDetected": [
+          "codeclimate"
+        ],
+        "riskScore": 1.2,
+        "clickable": true,
+        "shape": "box",
+        "details": {
+          "file": "test.spec.js",
+          "canonicalPath": "tests/integration/payment.test.js",
+          "totalIssues": 1,
+          "fileType": "JavaScript Test",
+          "recommendedAction": "Test coverage improvement",
+          "toolBreakdown": [
+            {
+              "toolName": "codeclimate",
+              "displayName": "Code Climate",
+              "color": "#4CAF50",
+              "issueCount": 1,
+              "severityBreakdown": {
+                "info": 1
+              },
+              "topIssues": [
+                {
+                  "type": "Test Coverage",
+                  "severity": "info",
+                  "description": "Missing edge case tests",
+                  "line": 89
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": "building-8",
+        "name": "index.html",
+        "x": 0,
+        "y": 0,
+        "z": 150,
+        "height": 12,
+        "width": 12,
+        "depth": 5,
+        "baseColor": "#E0E0E0",
+        "toolColor": "#e91e63",
+        "finalColor": "#e91e63",
+        "texture": {
+          "type": "frontend-neon",
+          "pattern": "digital",
+          "intensity": 0.3
+        },
+        "issueCount": 2,
+        "toolsDetected": [
+          "sonarqube"
+        ],
+        "riskScore": 2.1,
+        "clickable": true,
+        "shape": "cone",
+        "details": {
+          "file": "index.html",
+          "canonicalPath": "public/index.html",
+          "totalIssues": 2,
+          "fileType": "HTML Template",
+          "recommendedAction": "Accessibility improvements",
+          "toolBreakdown": [
+            {
+              "toolName": "sonarqube",
+              "displayName": "SonarQube",
+              "color": "#2196F3",
+              "issueCount": 2,
+              "severityBreakdown": {
+                "low": 2
+              },
+              "topIssues": [
+                {
+                  "type": "Missing Alt Text",
+                  "severity": "low",
+                  "description": "Image missing alt attribute",
+                  "line": 34
+                },
+                {
+                  "type": "Deprecated Tag",
+                  "severity": "low",
+                  "description": "Use semantic HTML instead",
+                  "line": 67
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "roads": [
+      {
+        "start": "building-1",
+        "end": "building-4",
+        "type": "correlation",
+        "color": "#FF6B35",
+        "width": 4,
+        "metadata": {
+          "correlationScore": 85,
+          "sharedTools": [
+            "semgrep",
+            "checkmarx"
+          ],
+          "riskLevel": "high",
+          "description": "Security correlation between auth and payment services"
+        }
+      },
+      {
+        "start": "building-2",
+        "end": "building-5",
+        "type": "correlation",
+        "color": "#2196F3",
+        "width": 3,
+        "metadata": {
+          "correlationScore": 65,
+          "sharedTools": [
+            "sonarqube"
+          ],
+          "riskLevel": "medium",
+          "description": "Code quality correlation between user model and API"
+        }
+      },
+      {
+        "start": "building-6",
+        "end": "building-7",
+        "type": "correlation",
+        "color": "#4CAF50",
+        "width": 2,
+        "metadata": {
+          "correlationScore": 45,
+          "sharedTools": [
+            "codeclimate"
+          ],
+          "riskLevel": "low",
+          "description": "Configuration and testing best practices"
+        }
+      }
+    ],
+    "districts": [
+      {
+        "name": "src/services",
+        "centerX": -50,
+        "centerZ": -50,
+        "buildings": [
+          "building-1",
+          "building-4"
+        ],
+        "metadata": {
+          "avgRiskScore": 7.85,
+          "totalIssues": 9,
+          "dominantTool": "semgrep",
+          "analysisTypes": [
+            "security",
+            "vulnerability"
+          ]
+        }
+      },
+      {
+        "name": "src/models",
+        "centerX": -20,
+        "centerZ": -80,
+        "buildings": [
+          "building-2"
+        ],
+        "metadata": {
+          "avgRiskScore": 4.5,
+          "totalIssues": 3,
+          "dominantTool": "sonarqube",
+          "analysisTypes": [
+            "quality",
+            "maintainability"
+          ]
+        }
+      },
+      {
+        "name": "config",
+        "centerX": 40,
+        "centerZ": -20,
+        "buildings": [
+          "building-6"
+        ],
+        "metadata": {
+          "avgRiskScore": 2.9,
+          "totalIssues": 3,
+          "dominantTool": "codacy",
+          "analysisTypes": [
+            "style",
+            "configuration"
+          ]
+        }
+      },
+      {
+        "name": "tests",
+        "centerX": -80,
+        "centerZ": 40,
+        "buildings": [
+          "building-7"
+        ],
+        "metadata": {
+          "avgRiskScore": 1.2,
+          "totalIssues": 1,
+          "dominantTool": "codeclimate",
+          "analysisTypes": [
+            "test-coverage",
+            "quality"
+          ]
+        }
+      }
+    ],
+    "metadata": {
+      "totalIssues": 21,
+      "filesAnalyzed": 8,
+      "toolsCovered": [
+        "sonarqube",
+        "semgrep",
+        "checkmarx",
+        "codeclimate",
+        "deepsource",
+        "codeql",
+        "veracode",
+        "codacy"
+      ],
+      "hotspots": 2,
+      "correlationGroups": 3,
+      "generatedAt": "2025-09-06T03:36:45.602Z",
+      "phase": "PHASE_2_UNIFIED_COMPLETE",
+      "marketCoverage": "92.8%"
+    }
+  }
+}

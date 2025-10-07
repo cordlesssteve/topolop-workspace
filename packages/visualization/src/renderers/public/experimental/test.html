@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head><title>Test</title></head>
+<body>
+<h1>Experimental folder is accessible</h1>
+<p>If you can see this, the HTTP server is working.</p>
+<script>
+// Test JSON loading
+fetch('./real-unified-analysis.json')
+    .then(response => {
+        console.log('JSON fetch response status:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('JSON loaded successfully:', data.summary);
+        document.body.innerHTML += '<p style="color: green;">✅ JSON data loaded: ' + data.summary.totalIssues + ' issues</p>';
+    })
+    .catch(error => {
+        console.error('JSON loading failed:', error);
+        document.body.innerHTML += '<p style="color: red;">❌ JSON loading failed: ' + error.message + '</p>';
+    });
+</script>
+</body>
+</html>

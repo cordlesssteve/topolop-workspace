@@ -1,0 +1,1538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏙️ Unified Hybrid City - Structural + Functional Analysis</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        body { 
+            margin: 0; 
+            padding: 0; 
+            overflow: hidden; 
+            background: linear-gradient(to bottom, #87CEEB, #E0F6FF); 
+            font-family: 'Arial', sans-serif; 
+            color: #e0e6ff;
+        }
+        #container { width: 100vw; height: 100vh; position: relative; }
+        
+        /* Hybrid Info Panel - Combines both approaches */
+        #info { 
+            position: absolute; 
+            top: 20px; 
+            left: 20px; 
+            background: rgba(10,6,20,0.95); 
+            color: #e0e6ff; 
+            padding: 20px; 
+            border-radius: 12px; 
+            z-index: 100;
+            max-width: 320px;
+            font-size: 14px;
+            line-height: 1.4;
+            border: 1px solid #ff6b35;
+        }
+        
+        /* Risk-based Building Info Panel */
+        #buildingInfo {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(10,6,20,0.95);
+            color: #e0e6ff;
+            padding: 20px;
+            border-radius: 12px;
+            z-index: 100;
+            max-width: 400px;
+            display: none;
+            border-left: 4px solid #ff6b35;
+        }
+
+        /* Enhanced Tool Panel - Horizontal Layout */
+        #toolPanel {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(10,6,20,0.95);
+            color: #e0e6ff;
+            padding: 15px 25px;
+            border-radius: 12px;
+            z-index: 100;
+            max-width: 90vw;
+            border: 1px solid #ff6b35;
+            white-space: nowrap;
+        }
+        
+        #toolList {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin: 10px 0;
+        }
+
+        /* Collapsible Legend Panel */
+        #legendPanel {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(10,6,20,0.95);
+            color: #e0e6ff;
+            padding: 15px;
+            border-radius: 12px;
+            z-index: 100;
+            max-width: 350px;
+            border: 1px solid #ff6b35;
+        }
+
+        #legendToggle {
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        #legendContent {
+            display: block;
+        }
+
+        /* Control Panel */
+        #controlPanel {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(10,6,20,0.95);
+            color: #e0e6ff;
+            padding: 15px;
+            border-radius: 12px;
+            z-index: 100;
+            max-width: 280px;
+            border: 1px solid #ff6b35;
+        }
+
+        .tool-item {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        .tool-item:hover {
+            background: rgba(255,107,53,0.2);
+        }
+
+        .tool-item.active {
+            background: rgba(255,107,53,0.3);
+            border-left: 3px solid #ff6b35;
+        }
+
+        .tool-checkbox {
+            width: 16px;
+            height: 16px;
+            background: #ff6b35;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+            margin-right: 6px;
+            flex-shrink: 0;
+        }
+
+        .tool-info {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .tool-name {
+            font-weight: bold;
+            color: #e0e6ff;
+        }
+
+        .tool-issues {
+            font-size: 10px;
+            color: #ff6b35;
+            opacity: 0.8;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .stat-item {
+            background: rgba(255,255,255,0.1);
+            padding: 8px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #ff6b35;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #bbb;
+        }
+
+        /* Risk Score Indicators */
+        .risk-critical { color: #ff4444; }
+        .risk-high { color: #ff8844; }
+        .risk-medium { color: #ffaa00; }
+        .risk-low { color: #44ff44; }
+
+        /* Button Styles */
+        .control-button {
+            background: rgba(255,107,53,0.2);
+            border: 1px solid #ff6b35;
+            color: #e0e6ff;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 2px;
+            transition: all 0.2s ease;
+        }
+
+        .control-button:hover {
+            background: rgba(255,107,53,0.4);
+        }
+
+        h3, h4 {
+            margin: 0 0 10px 0;
+            color: #ff6b35;
+        }
+
+        .subtitle {
+            color: #bbb;
+            font-size: 12px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <canvas id="cityCanvas"></canvas>
+        
+        <!-- Hybrid Info Panel -->
+        <div id="info">
+            <h3>🏙️ Unified Hybrid City</h3>
+            <div class="subtitle">STRUCTURAL + FUNCTIONAL ANALYSIS</div>
+            
+            <div id="cityStats">
+                <div>🏢 Buildings: <span id="buildingCount">8</span></div>
+                <div>🔍 Analysis Tools: <span id="toolCount">8</span></div>
+                <div>⚠️ Total Issues: <span id="totalIssues">0</span></div>
+                <div>🎯 Risk Score: <span id="riskScore" class="risk-medium">7.2/10</span></div>
+                <div>🔒 Security Score: <span id="securityScore" class="risk-critical">4.1/10</span></div>
+                <div>📊 Quality Score: <span id="qualityScore" class="risk-medium">6.8/10</span></div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value" id="criticalBuildings">3</div>
+                    <div class="stat-label">Critical</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="healthyBuildings">2</div>
+                    <div class="stat-label">Healthy</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="coveragePercent">73%</div>
+                    <div class="stat-label">Coverage</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="toolCorrelations">12</div>
+                    <div class="stat-label">Correlations</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Building Detail Panel -->
+        <div id="buildingInfo">
+            <h4 id="buildingTitle">Building Details</h4>
+            <div id="buildingDetails"></div>
+        </div>
+        
+        <!-- Enhanced Tool Panel -->
+        <div id="toolPanel">
+            <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                <h4 style="margin: 0; font-size: 14px;">🔍 Analysis Tools</h4>
+                <div id="toolList">
+                    <!-- Tools will be populated dynamically -->
+                </div>
+                <div style="display: flex; gap: 15px; font-size: 11px; opacity: 0.8;">
+                    <span>Active: <strong id="activeToolCount">8</strong></span>
+                    <span>Visible: <strong id="visibleBuildingCount">8</strong></span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Collapsible Legend Panel -->
+        <div id="legendPanel">
+            <div id="legendToggle">
+                <span>📊 Legend & Statistics</span>
+                <span id="legendArrow">🔽</span>
+            </div>
+            <div id="legendContent">
+                <div style="margin-bottom:15px;">
+                    <strong>Risk-Based Coloring:</strong><br>
+                    <span class="risk-critical">🟥 Critical Issues</span><br>
+                    <span class="risk-high">🟧 High Risk</span><br>
+                    <span class="risk-medium">🟨 Medium Risk</span><br>
+                    <span class="risk-low">🟩 Low Risk / Healthy</span>
+                </div>
+                
+                <div style="margin-bottom:15px;">
+                    <strong>Building Textures:</strong><br>
+                    📦 Solid = Core files<br>
+                    🏁 Striped = Security files<br>
+                    🔵 Dotted = Utility files<br>
+                    ⬜ Grid = Configuration files
+                </div>
+                
+                <div>
+                    <strong>Height = Issue Complexity</strong><br>
+                    <span style="font-size:12px;">Taller buildings = More critical issues</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Hybrid Control Panel -->
+        <div id="controlPanel">
+            <div id="controlToggle" style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; margin-bottom: 10px;">
+                <h4 style="margin: 0;">🎮 Controls</h4>
+                <span id="controlArrow">🔼</span>
+            </div>
+            <div id="controlContent">
+            
+            <div style="margin-bottom:15px;">
+                <strong>Movement:</strong><br>
+                🖱️ Mouse: Orbit view<br>
+                ⌨️ WASD: Move camera<br>
+                🔍 Scroll: Zoom in/out<br>
+                🏢 Click: Inspect building
+            </div>
+            
+            <div style="margin-bottom:15px;">
+                <strong>Environment:</strong><br>
+                <button class="control-button" onclick="resetCamera()">🔄 Reset Camera</button><br>
+                <button class="control-button" onclick="startTour()">🎯 Guided Tour</button>
+            </div>
+            
+            <div style="margin-bottom:15px;">
+                <strong>Lighting Controls:</strong><br>
+                <label style="font-size:12px; display:block; margin:4px 0;">
+                    🌅 Ambient: <input type="range" min="0" max="1" step="0.1" value="0.4" onchange="adjustLighting('ambient', this.value)" style="width:80px;">
+                </label>
+                <label style="font-size:12px; display:block; margin:4px 0;">
+                    ☀️ Sun: <input type="range" min="0" max="2" step="0.1" value="0.8" onchange="adjustLighting('directional', this.value)" style="width:80px;">
+                </label>
+                <label style="font-size:12px; display:block; margin:4px 0;">
+                    🔸 Point 1: <input type="range" min="0" max="1" step="0.1" value="0.3" onchange="adjustLighting('point1', this.value)" style="width:80px;">
+                </label>
+                <label style="font-size:12px; display:block; margin:4px 0;">
+                    🔹 Point 2: <input type="range" min="0" max="1" step="0.1" value="0.2" onchange="adjustLighting('point2', this.value)" style="width:80px;">
+                </label>
+                <button class="control-button" onclick="toggleAllLights()" style="font-size:11px;">💡 Toggle All</button>
+            </div>
+            
+            <div style="margin-bottom:15px;">
+                <strong>⚡ Camera Speed Settings:</strong><br>
+                <label style="font-size:12px; display:block; margin:4px 0;">
+                    🏃 Movement: <span id="move-speed-value">5</span><br>
+                    <input type="range" id="move-speed" min="1" max="15" value="5" step="0.5" style="width:80px;">
+                </label>
+                <label style="font-size:12px; display:block; margin:4px 0;">
+                    🔍 Zoom: <span id="zoom-speed-value">1.0</span><br>
+                    <input type="range" id="zoom-speed" min="0.1" max="3.0" value="1.0" step="0.1" style="width:80px;">
+                </label>
+                <label style="font-size:12px; display:block; margin:4px 0;">
+                    🔄 Rotation: <span id="rotation-speed-value">1.0</span><br>
+                    <input type="range" id="rotation-speed" min="0.1" max="3.0" value="1.0" step="0.1" style="width:80px;">
+                </label>
+            </div>
+            
+            <div style="margin-bottom:15px;">
+                <strong>Atmosphere:</strong><br>
+                <label style="font-size:12px; display:block; margin:4px 0;">
+                    🌫️ Fog: <input type="range" min="50" max="500" step="25" value="100" onchange="adjustFog('near', this.value)" style="width:80px;">
+                </label>
+                <label style="font-size:12px; display:block; margin:4px 0;">
+                    🌫️ Range: <input type="range" min="200" max="1000" step="25" value="800" onchange="adjustFog('far', this.value)" style="width:80px;">
+                </label>
+                <button class="control-button" onclick="toggleFog()" style="font-size:11px;">🌫️ Toggle Fog</button>
+            </div>
+            
+            <div style="margin-bottom:15px;">
+                <strong>Road Pattern:</strong><br>
+                <input type="radio" name="roadStyle" value="curved" checked> 🌊 Curved<br>
+                <input type="radio" name="roadStyle" value="grid"> 🏙️ NYC Grid
+            </div>
+            
+            <div style="margin-bottom:15px;">
+                <strong>Building Analysis:</strong><br>
+                <label style="font-size:12px; display:block; margin:4px 0;">
+                    🏢 Scale: <input type="range" id="building-scale" min="0.5" max="2.0" value="1.0" step="0.1" onchange="adjustBuildingScale(this.value)" style="width:80px;">
+                </label>
+                <label style="font-size:12px; display:block; margin:4px 0;">
+                    📏 Height: <input type="range" id="height-multiplier" min="0.5" max="3.0" value="1.0" step="0.1" onchange="adjustBuildingHeight(this.value)" style="width:80px;">
+                </label>
+                <button class="control-button" onclick="centerOnBuildings()" style="font-size:11px;">🎯 Center View</button>
+            </div>
+            
+            <div>
+                <strong>Visual Modes:</strong><br>
+                <button class="control-button" onclick="toggleWireframe()" style="font-size:10px;">📐 Wireframe</button>
+                <button class="control-button" onclick="exportView()" style="font-size:10px;">📸 Export</button>
+            </div>
+            </div> <!-- Close controlContent -->
+        </div>
+        
+        <!-- Enhanced Statistics Panel -->
+        <div id="statsPanel" style="position: absolute; top: 20px; left: 20px; background: rgba(0,0,0,0.85); color: white; padding: 15px; border-radius: 8px; border: 1px solid rgba(74, 158, 255, 0.3); backdrop-filter: blur(10px); min-width: 200px;">
+            <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                <h4 style="margin: 0; color: #4a9eff; font-size: 14px;">📊 Analysis Dashboard</h4>
+            </div>
+            
+            <div style="margin-bottom: 8px;">
+                <div style="display: flex; justify-content: space-between; font-size: 11px;">
+                    <span>🏢 Buildings:</span>
+                    <span style="color: #4a9eff; font-weight: bold;" id="buildingCount">0</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 11px;">
+                    <span>🔧 Active Tools:</span>
+                    <span style="color: #4a9eff; font-weight: bold;" id="toolCount">0</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 11px;">
+                    <span>⚠️ Total Issues:</span>
+                    <span style="color: #ff6b6b; font-weight: bold;" id="totalIssues">0</span>
+                </div>
+            </div>
+            
+            <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px; margin-top: 8px;">
+                <div style="display: flex; justify-content: space-between; font-size: 10px;">
+                    <span>🔴 Critical:</span>
+                    <span style="color: #ff4757;" id="criticalBuildings">0</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 10px;">
+                    <span>🟢 Healthy:</span>
+                    <span style="color: #26de81;" id="healthyBuildings">0</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 10px;">
+                    <span>👁️ Visible:</span>
+                    <span style="color: #4a9eff;" id="visibleBuildingCount">0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        console.log('🏙️ Initializing Unified Hybrid City...');
+        
+        // Global variables
+        let scene, camera, renderer, controls;
+        let buildings = [];
+        let activeTools = new Set();
+        let cityData = null;
+        let legendCollapsed = false;
+        let controlsCollapsed = false;
+        
+        // Configurable speeds - global so they can be adjusted by user controls
+        let moveSpeed = 5;
+        let zoomSpeed = 1;
+        let rotationSpeed = 1;
+        
+        // LOD (Level of Detail) system
+        let lodEnabled = true;
+        let highDetailBuildings = [];
+        let mediumDetailBuildings = [];
+        let lowDetailBuildings = [];
+
+        // Initialize the hybrid city
+        async function initHybridCity() {
+            try {
+                // Load data (try both data sources)
+                await loadCityData();
+                
+                // Setup 3D scene
+                setupScene();
+                setupCamera();
+                setupRenderer();
+                setupControls();
+                setupLighting();
+                
+                // Generate hybrid city
+                generateHybridCity();
+                
+                // Setup UI interactions
+                setupUI();
+                
+                // Start render loop
+                animate();
+                
+                console.log('✨ Unified Hybrid City Ready!');
+                
+            } catch (error) {
+                console.error('❌ Failed to initialize hybrid city:', error);
+                document.getElementById('info').innerHTML = `
+                    <h3 style="color: #ff4444;">⚠️ Initialization Error</h3>
+                    <p>Failed to load city data or initialize 3D renderer.</p>
+                    <p style="font-size:12px; color:#888;">${error.message}</p>
+                `;
+            }
+        }
+
+        async function loadCityData() {
+            try {
+                // Try to load immersive city data first
+                const response = await fetch('/data/unified-city-data-export.json');
+                if (response.ok) {
+                    const data = await response.json();
+                    cityData = data;
+                    console.log('🎯 Loaded immersive city data:', data);
+                    return;
+                }
+                
+                // Fallback to tier1 sample data
+                const tier1Response = await fetch('/results/tier1-sample-analysis.json');
+                if (tier1Response.ok) {
+                    const tier1Data = await tier1Response.json();
+                    cityData = adaptTier1Data(tier1Data);
+                    console.log('🎯 Loaded and adapted tier1 data:', cityData);
+                    return;
+                }
+                
+                throw new Error('No city data available');
+                
+            } catch (error) {
+                console.error('Failed to load city data:', error);
+                // Use minimal fallback data
+                cityData = createFallbackData();
+            }
+        }
+
+        function adaptTier1Data(tier1Data) {
+            // Convert tier1 format to immersive city format
+            const adapted = {
+                cityLayout: {
+                    buildings: tier1Data.cityVisualization?.buildings?.map((building, index) => ({
+                        id: building.id || `building-${index}`,
+                        name: building.name,
+                        x: building.position?.x || (index * 30 - 45),
+                        y: building.position?.y || 0,
+                        z: building.position?.z || 0,
+                        height: building.height || 20,
+                        width: 15,
+                        depth: 10,
+                        baseColor: getRiskBasedColor(calculateRiskScore(building)),
+                        toolColor: getRiskBasedColor(calculateRiskScore(building)),
+                        finalColor: getRiskBasedColor(calculateRiskScore(building)),
+                        shape: building.shape || 'box',
+                        issueCount: calculateIssueCount(building),
+                        riskScore: calculateRiskScore(building),
+                        toolsDetected: extractTools(building),
+                        details: {
+                            file: building.name,
+                            canonicalPath: building.filePath || building.name,
+                            totalIssues: calculateIssueCount(building),
+                            fileType: 'Source File',
+                            recommendedAction: building.sonarqube?.qualityGate === 'FAILED' ? 'Critical review required' : 'Monitor',
+                            toolBreakdown: createToolBreakdown(building)
+                        }
+                    })) || []
+                }
+            };
+            
+            return adapted;
+        }
+
+        function calculateIssueCount(building) {
+            let count = 0;
+            if (building.sonarqube) {
+                count += (building.sonarqube.codeSmells || 0) + 
+                        (building.sonarqube.vulnerabilities || 0) + 
+                        (building.sonarqube.bugs || 0);
+            }
+            if (building.semgrep?.findings) {
+                count += building.semgrep.findings.length;
+            }
+            return count;
+        }
+
+        function calculateRiskScore(building) {
+            let riskScore = 0;
+            let issueCount = building.issueCount || 0;
+            
+            // Use existing riskScore from data if available
+            if (building.riskScore && building.riskScore > 0) {
+                return building.riskScore;
+            }
+            
+            // Calculate from toolBreakdown if available
+            if (building.details?.toolBreakdown) {
+                building.details.toolBreakdown.forEach(tool => {
+                    const toolIssues = tool.issueCount || 0;
+                    issueCount += toolIssues;
+                    
+                    // Weight by tool type and severity
+                    switch(tool.toolName) {
+                        case 'sonarqube':
+                            riskScore += Math.min(toolIssues * 2.0, 8.5);
+                            break;
+                        case 'semgrep':
+                        case 'checkmarx':
+                            riskScore += Math.min(toolIssues * 3.0, 7.0); // Security tools
+                            break;
+                        case 'codeclimate':
+                        case 'deepsource':
+                        case 'codacy':
+                            riskScore += Math.min(toolIssues * 1.5, 5.0); // Quality tools
+                            break;
+                        case 'codeql':
+                        case 'veracode':
+                            riskScore += Math.min(toolIssues * 2.5, 6.0); // Analysis tools
+                            break;
+                        default:
+                            riskScore += Math.min(toolIssues * 1.0, 3.0);
+                    }
+                });
+            }
+            
+            // If no analysis data found, return 0 (gray)
+            if (riskScore === 0 && issueCount === 0) return 0;
+            
+            // Normalize to 0-10 scale with issue count multiplier
+            const issueMultiplier = Math.min(issueCount * 0.2, 2.0);
+            return Math.min(riskScore + issueMultiplier, 10.0);
+        }
+
+        function extractTools(building) {
+            const tools = [];
+            if (building.sonarqube) tools.push('sonarqube');
+            if (building.codeClimate) tools.push('codeclimate');
+            if (building.semgrep) tools.push('semgrep');
+            return tools;
+        }
+
+        function createToolBreakdown(building) {
+            const breakdown = [];
+            if (building.sonarqube) {
+                breakdown.push({
+                    toolName: 'sonarqube',
+                    displayName: 'SonarQube',
+                    color: '#2196F3',
+                    issueCount: (building.sonarqube.codeSmells || 0) + (building.sonarqube.vulnerabilities || 0),
+                    qualityGate: building.sonarqube.qualityGate
+                });
+            }
+            if (building.semgrep) {
+                breakdown.push({
+                    toolName: 'semgrep',
+                    displayName: 'Semgrep',
+                    color: '#FF5722',
+                    issueCount: building.semgrep.findings?.length || 0
+                });
+            }
+            return breakdown;
+        }
+
+        function createFallbackData() {
+            // No fallback data - return empty city
+            return {
+                cityLayout: {
+                    buildings: []
+                }
+            };
+        }
+
+        function setupScene() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x87CEEB);
+            
+            // Add adjustable fog for depth (matching sky color with extended range)
+            scene.fog = new THREE.Fog(0x87CEEB, 100, 800);
+            window.fogSettings = { near: 100, far: 800, enabled: true };
+        }
+
+        function setupCamera() {
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(40, 30, 40);
+        }
+
+        function setupRenderer() {
+            const canvas = document.getElementById('cityCanvas');
+            renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        }
+
+        function setupControls() {
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.maxPolarAngle = Math.PI / 2;
+            
+            // Speed variables are now global - declared at the top
+            
+            // Apply speed settings to controls
+            function updateControlSpeeds() {
+                controls.rotateSpeed = rotationSpeed;
+                controls.zoomSpeed = zoomSpeed;
+                controls.panSpeed = moveSpeed * 0.5; // Pan speed related to move speed
+            }
+            updateControlSpeeds();
+            
+            // Add WASD controls and configurable speeds
+            const keys = { w: false, a: false, s: false, d: false };
+            
+            document.addEventListener('keydown', (event) => {
+                switch(event.key.toLowerCase()) {
+                    case 'w': keys.w = true; break;
+                    case 'a': keys.a = true; break;
+                    case 's': keys.s = true; break;
+                    case 'd': keys.d = true; break;
+                    case 't': startTour(); break;
+                    case ' ': toggleLighting(); event.preventDefault(); break;
+                    case 'r': resetCamera(); break;
+                }
+            });
+            
+            document.addEventListener('keyup', (event) => {
+                switch(event.key.toLowerCase()) {
+                    case 'w': keys.w = false; break;
+                    case 'a': keys.a = false; break;
+                    case 's': keys.s = false; break;
+                    case 'd': keys.d = false; break;
+                }
+            });
+            
+            // Camera-relative WASD movement (proper RTS standard)
+            // Movement feels natural regardless of camera rotation angle
+            function updateMovement() {
+                
+                // Get camera's forward and right vectors, but flatten them to horizontal plane
+                const forward = new THREE.Vector3();
+                camera.getWorldDirection(forward);
+
+                const right = new THREE.Vector3();
+                right.crossVectors(camera.up, forward);
+
+                // Flatten vectors to horizontal plane (ignore Y component for ground-level movement)
+                const flatForward = new THREE.Vector3(forward.x, 0, forward.z).normalize();
+                const flatRight = new THREE.Vector3(right.x, 0, right.z).normalize();
+
+                // W = Move forward relative to camera view
+                if (keys.w) {
+                    camera.position.addScaledVector(flatForward, moveSpeed);
+                    controls.target.addScaledVector(flatForward, moveSpeed);
+                }
+                // S = Move backward relative to camera view
+                if (keys.s) {
+                    camera.position.addScaledVector(flatForward, -moveSpeed);
+                    controls.target.addScaledVector(flatForward, -moveSpeed);
+                }
+                // A = Strafe left relative to camera view
+                if (keys.a) {
+                    camera.position.addScaledVector(flatRight, moveSpeed);
+                    controls.target.addScaledVector(flatRight, moveSpeed);
+                }
+                // D = Strafe right relative to camera view
+                if (keys.d) {
+                    camera.position.addScaledVector(flatRight, -moveSpeed);
+                    controls.target.addScaledVector(flatRight, -moveSpeed);
+                }
+                
+                requestAnimationFrame(updateMovement);
+            }
+            updateMovement();
+        }
+
+        function setupLighting() {
+            // Ambient light
+            const ambientLight = new THREE.AmbientLight(0x404060, 0.4);
+            ambientLight.name = 'ambientLight';
+            scene.add(ambientLight);
+            
+            // Directional light (sun)
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(100, 100, 50);
+            directionalLight.castShadow = true;
+            directionalLight.shadow.mapSize.width = 2048;
+            directionalLight.shadow.mapSize.height = 2048;
+            directionalLight.name = 'directionalLight';
+            scene.add(directionalLight);
+            
+            // Additional point lights for atmosphere
+            const pointLight1 = new THREE.PointLight(0xff6b35, 0.3, 100);
+            pointLight1.position.set(-50, 20, -50);
+            pointLight1.name = 'pointLight1';
+            scene.add(pointLight1);
+            
+            const pointLight2 = new THREE.PointLight(0x4488ff, 0.2, 100);
+            pointLight2.position.set(50, 20, 50);
+            pointLight2.name = 'pointLight2';
+            scene.add(pointLight2);
+            
+            // Store lighting settings globally
+            window.lightingSettings = {
+                ambient: { intensity: 0.4, enabled: true },
+                directional: { intensity: 0.8, enabled: true },
+                point1: { intensity: 0.3, enabled: true },
+                point2: { intensity: 0.2, enabled: true }
+            };
+        }
+
+        function generateHybridCity() {
+            if (!cityData?.cityLayout?.buildings) {
+                console.warn('No building data available');
+                return;
+            }
+            
+            // Clear existing buildings
+            buildings.forEach(building => scene.remove(building));
+            buildings = [];
+            
+            // Create ground with pleasant light green color
+            const groundGeometry = new THREE.PlaneGeometry(500, 500);
+            const groundMaterial = new THREE.MeshLambertMaterial({ color: 0x90EE90 }); // Light green
+            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = -Math.PI / 2;
+            ground.receiveShadow = true;
+            scene.add(ground);
+            
+            // Generate buildings
+            cityData.cityLayout.buildings.forEach((buildingData, index) => {
+                const building = createHybridBuilding(buildingData, index);
+                if (building) {
+                    buildings.push(building);
+                    scene.add(building);
+                }
+            });
+            
+            // Initialize all tools as active
+            cityData.cityLayout.buildings.forEach(building => {
+                if (building.toolsDetected) {
+                    building.toolsDetected.forEach(tool => activeTools.add(tool));
+                }
+            });
+            
+            populateToolPanel();
+            updateStats();
+            
+            console.log(`🏙️ Generated ${buildings.length} hybrid buildings`);
+        }
+
+        function createHybridBuilding(buildingData, index) {
+            // Apply logarithmic height scaling to prevent tall buildings from overpowering small ones
+            const rawHeight = buildingData.height || 10;
+            const minHeight = 8; // Minimum building height
+            const maxHeight = 60; // Maximum visual height after scaling
+            
+            // Logarithmic scaling: log(height + 1) to avoid log(0), then scale to range
+            const logHeight = Math.log(rawHeight + 1) / Math.log(2); // log base 2
+            const scaledHeight = minHeight + (logHeight / Math.log(100 + 1) * Math.log(2)) * (maxHeight - minHeight);
+            const finalHeight = Math.max(minHeight, Math.min(maxHeight, scaledHeight));
+            
+            // Create LOD group for different detail levels
+            const lodGroup = new THREE.Group();
+            
+            // High Detail (close up) - full geometry with textures
+            const highDetailGeometry = new THREE.BoxGeometry(buildingData.width || 15, finalHeight, buildingData.depth || 10);
+            const highDetailMaterial = createTexturedMaterial(buildingData);
+            const highDetailBuilding = new THREE.Mesh(highDetailGeometry, highDetailMaterial);
+            highDetailBuilding.castShadow = true;
+            highDetailBuilding.receiveShadow = true;
+            
+            // Calculate risk-based color for this building
+            const riskScore = calculateRiskScore(buildingData);
+            const riskColor = getRiskBasedColor(riskScore);
+            
+            // Medium Detail (medium distance) - simplified geometry, basic material
+            const mediumDetailGeometry = new THREE.BoxGeometry(buildingData.width || 15, finalHeight, buildingData.depth || 10, 1, 1, 1);
+            const mediumDetailMaterial = new THREE.MeshLambertMaterial({ 
+                color: riskColor
+            });
+            const mediumDetailBuilding = new THREE.Mesh(mediumDetailGeometry, mediumDetailMaterial);
+            mediumDetailBuilding.castShadow = true;
+            
+            // Low Detail (far distance) - very simple geometry, flat shading
+            const lowDetailGeometry = new THREE.BoxGeometry(buildingData.width || 15, finalHeight, buildingData.depth || 10, 1, 1, 1);
+            const lowDetailMaterial = new THREE.MeshBasicMaterial({ 
+                color: riskColor
+            });
+            const lowDetailBuilding = new THREE.Mesh(lowDetailGeometry, lowDetailMaterial);
+            
+            // Add all detail levels to the group
+            lodGroup.add(highDetailBuilding);
+            lodGroup.add(mediumDetailBuilding);
+            lodGroup.add(lowDetailBuilding);
+            
+            // Store references for LOD switching
+            lodGroup.highDetail = highDetailBuilding;
+            lodGroup.mediumDetail = mediumDetailBuilding;
+            lodGroup.lowDetail = lowDetailBuilding;
+            
+            // Initially show high detail
+            mediumDetailBuilding.visible = false;
+            lowDetailBuilding.visible = false;
+            
+            // Position the entire LOD group
+            lodGroup.position.set(
+                buildingData.x, 
+                finalHeight / 2, 
+                buildingData.z
+            );
+            
+            // Store building data in the group
+            lodGroup.userData = { ...buildingData, originalHeight: rawHeight, scaledHeight: finalHeight };
+            
+            // Add click handler to all detail levels
+            const clickHandler = () => showBuildingDetails(buildingData);
+            highDetailBuilding.onClick = clickHandler;
+            mediumDetailBuilding.onClick = clickHandler;
+            lowDetailBuilding.onClick = clickHandler;
+            lodGroup.onClick = clickHandler;
+            
+            return lodGroup;
+        }
+
+        function createTexturedMaterial(buildingData) {
+            // Use risk-based color instead of pre-defined colors
+            const riskScore = calculateRiskScore(buildingData);
+            const riskColor = getRiskBasedColor(riskScore);
+            const baseColor = new THREE.Color(riskColor);
+            
+            // Determine file type based on shape or name
+            let fileType = 'core'; // default
+            if (buildingData.shape === 'pyramid' || buildingData.name?.includes('auth') || buildingData.name?.includes('security')) {
+                fileType = 'security';
+            } else if (buildingData.shape === 'cylinder' || buildingData.name?.includes('util') || buildingData.name?.includes('helper')) {
+                fileType = 'utilities';
+            } else if (buildingData.shape === 'cone' || buildingData.name?.includes('config') || buildingData.name?.includes('settings')) {
+                fileType = 'config';
+            }
+            
+            // Create canvas for texture
+            const canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+            
+            // Fill base color
+            ctx.fillStyle = baseColor.getStyle();
+            ctx.fillRect(0, 0, 256, 256);
+            
+            // Add pattern based on file type
+            switch(fileType) {
+                case 'security':
+                    // Diagonal stripes pattern
+                    ctx.strokeStyle = 'rgba(0,0,0,0.8)';
+                    ctx.lineWidth = 3;
+                    for (let i = 0; i < 256; i += 20) {
+                        ctx.beginPath();
+                        ctx.moveTo(i, 0);
+                        ctx.lineTo(i + 256, 256);
+                        ctx.stroke();
+                    }
+                    break;
+                    
+                case 'utilities':
+                    // Polka dots pattern
+                    ctx.fillStyle = 'rgba(0,0,0,0.8)';
+                    for (let x = 20; x < 256; x += 40) {
+                        for (let y = 20; y < 256; y += 40) {
+                            ctx.beginPath();
+                            ctx.arc(x, y, 8, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                    }
+                    break;
+                    
+                case 'config':
+                    // Cross-hatch pattern
+                    ctx.strokeStyle = 'rgba(0,0,0,0.8)';
+                    ctx.lineWidth = 2;
+                    // Horizontal lines
+                    for (let y = 0; y < 256; y += 15) {
+                        ctx.beginPath();
+                        ctx.moveTo(0, y);
+                        ctx.lineTo(256, y);
+                        ctx.stroke();
+                    }
+                    // Vertical lines
+                    for (let x = 0; x < 256; x += 15) {
+                        ctx.beginPath();
+                        ctx.moveTo(x, 0);
+                        ctx.lineTo(x, 256);
+                        ctx.stroke();
+                    }
+                    break;
+                    
+                default: // 'core'
+                    // Solid color (no pattern)
+                    break;
+            }
+            
+            // Create Three.js texture from canvas
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            
+            return new THREE.MeshLambertMaterial({ 
+                map: texture,
+                transparent: true,
+                opacity: 0.9
+            });
+        }
+
+        function populateToolPanel() {
+            const toolList = document.getElementById('toolList');
+            const uniqueTools = [...activeTools];
+            
+            toolList.innerHTML = '';
+            
+            uniqueTools.forEach(toolName => {
+                const toolElement = document.createElement('div');
+                toolElement.className = 'tool-item active';
+                
+                const issueCount = buildings.reduce((count, building) => {
+                    const hasTools = building.userData.toolsDetected?.includes(toolName);
+                    return hasTools ? count + (building.userData.issueCount || 0) : count;
+                }, 0);
+                
+                toolElement.innerHTML = `
+                    <div class="tool-checkbox">✓</div>
+                    <div class="tool-info">
+                        <div class="tool-name">${capitalizeToolName(toolName)}</div>
+                        <div class="tool-issues">${issueCount} issues</div>
+                    </div>
+                `;
+                
+                toolElement.onclick = () => toggleTool(toolName, toolElement);
+                toolList.appendChild(toolElement);
+            });
+        }
+
+        function capitalizeToolName(toolName) {
+            const names = {
+                'sonarqube': 'SonarQube',
+                'semgrep': 'Semgrep',
+                'codeclimate': 'Code Climate',
+                'checkmarx': 'Checkmarx',
+                'deepsource': 'DeepSource',
+                'veracode': 'Veracode',
+                'codeql': 'CodeQL',
+                'codacy': 'Codacy',
+                'fallback': 'Sample Data'
+            };
+            return names[toolName] || toolName.charAt(0).toUpperCase() + toolName.slice(1);
+        }
+
+        function toggleTool(toolName, element) {
+            if (activeTools.has(toolName)) {
+                activeTools.delete(toolName);
+                element.className = 'tool-item';
+                element.querySelector('.tool-checkbox').textContent = '';
+            } else {
+                activeTools.add(toolName);
+                element.className = 'tool-item active';
+                element.querySelector('.tool-checkbox').textContent = '✓';
+            }
+            
+            filterBuildingsByTools();
+            updateStats();
+        }
+
+        function filterBuildingsByTools() {
+            buildings.forEach(building => {
+                const hasActiveTools = building.userData.toolsDetected?.some(tool => activeTools.has(tool));
+                building.visible = hasActiveTools || activeTools.size === 0;
+            });
+        }
+
+        function setupUI() {
+            // Legend toggle
+            document.getElementById('legendToggle').onclick = () => {
+                legendCollapsed = !legendCollapsed;
+                const content = document.getElementById('legendContent');
+                const arrow = document.getElementById('legendArrow');
+                
+                if (legendCollapsed) {
+                    content.style.display = 'none';
+                    arrow.textContent = '🔽';
+                } else {
+                    content.style.display = 'block';
+                    arrow.textContent = '🔼';
+                }
+            };
+            
+            // Controls toggle
+            document.getElementById('controlToggle').onclick = () => {
+                controlsCollapsed = !controlsCollapsed;
+                const content = document.getElementById('controlContent');
+                const arrow = document.getElementById('controlArrow');
+                
+                if (controlsCollapsed) {
+                    content.style.display = 'none';
+                    arrow.textContent = '🔽';
+                } else {
+                    content.style.display = 'block';
+                    arrow.textContent = '🔼';
+                }
+            };
+            
+            // Building click detection
+            const raycaster = new THREE.Raycaster();
+            const mouse = new THREE.Vector2();
+            
+            renderer.domElement.addEventListener('click', (event) => {
+                mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+                mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+                
+                raycaster.setFromCamera(mouse, camera);
+                // Recursively search through all building groups and their children
+                const intersects = raycaster.intersectObjects(buildings, true);
+                
+                if (intersects.length > 0) {
+                    // Find the parent building group that contains the userData
+                    let buildingGroup = intersects[0].object;
+                    while (buildingGroup && !buildingGroup.userData?.name) {
+                        buildingGroup = buildingGroup.parent;
+                    }
+                    
+                    if (buildingGroup && buildingGroup.userData) {
+                        showBuildingDetails(buildingGroup.userData);
+                        // Highlight the selected building
+                        highlightBuilding(buildingGroup);
+                    }
+                } else {
+                    hideBuildingDetails();
+                    clearBuildingHighlight();
+                }
+            });
+        }
+
+        let selectedBuilding = null;
+        
+        function showBuildingDetails(buildingData) {
+            const panel = document.getElementById('buildingInfo');
+            const title = document.getElementById('buildingTitle');
+            const details = document.getElementById('buildingDetails');
+            
+            title.textContent = `🏢 ${buildingData.name || buildingData.id}`;
+            
+            const riskClass = getRiskClass(buildingData.riskScore);
+            
+            // Enhanced details with tool breakdown
+            let toolBreakdownHtml = '';
+            if (buildingData.details?.toolBreakdown) {
+                toolBreakdownHtml = `
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.2);">
+                        <strong>🔍 Tool Analysis:</strong><br><br>
+                        ${buildingData.details.toolBreakdown.map(tool => `
+                            <div style="margin-bottom: 12px; padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px; border-left: 3px solid ${tool.color};">
+                                <div style="font-weight: bold; color: ${tool.color}; margin-bottom: 4px;">
+                                    ${tool.displayName} (${tool.issueCount} issues)
+                                </div>
+                                ${tool.topIssues ? tool.topIssues.map(issue => `
+                                    <div style="font-size: 11px; margin-left: 10px; margin-bottom: 3px;">
+                                        • <span style="color: ${getSeverityColor(issue.severity)};">${issue.type}</span>
+                                        ${issue.line ? ` (line ${issue.line})` : ''}
+                                    </div>
+                                `).join('') : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+            
+            details.innerHTML = `
+                <div style="margin-bottom: 15px;">
+                    <strong>📁 File:</strong> ${buildingData.details?.canonicalPath || buildingData.name}<br>
+                    <strong>📄 Type:</strong> ${buildingData.details?.fileType || 'Source File'}<br>
+                    <strong>⚠️ Risk Score:</strong> <span class="${riskClass}">${buildingData.riskScore || 0}/10</span><br>
+                    <strong>📊 Height:</strong> ${Math.round(buildingData.originalHeight || 0)} (scaled: ${Math.round(buildingData.scaledHeight || 0)})
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <strong>🐛 Total Issues:</strong> ${buildingData.issueCount || 0}<br>
+                    <strong>🔧 Tools Active:</strong> ${buildingData.toolsDetected?.length || 0}<br>
+                    <strong>💡 Recommendation:</strong> ${buildingData.details?.recommendedAction || 'Monitor'}
+                </div>
+                
+                <div style="font-size: 12px; margin-bottom: 10px;">
+                    <strong>🏷️ Analysis Tools:</strong><br>
+                    <div style="margin-top: 5px;">
+                        ${buildingData.toolsDetected?.map(tool => 
+                            `<span style="display: inline-block; background: rgba(255,107,53,0.2); color: #ff6b35; padding: 2px 6px; border-radius: 12px; font-size: 10px; margin: 1px;">${capitalizeToolName(tool)}</span>`
+                        ).join(' ') || '<span style="opacity: 0.7;">No tools detected</span>'}
+                    </div>
+                </div>
+                
+                ${toolBreakdownHtml}
+            `;
+            
+            panel.style.display = 'block';
+        }
+        
+        function getSeverityColor(severity) {
+            switch(severity?.toLowerCase()) {
+                case 'critical': return '#ff4757';
+                case 'high': return '#ff6b35';
+                case 'medium': return '#ffaa00';
+                case 'low': return '#26de81';
+                default: return '#888';
+            }
+        }
+        
+        function getRiskBasedColor(riskScore) {
+            console.log(`Risk score: ${riskScore} for building`);
+            if (riskScore === 0) return '#CCCCCC'; // Light gray for no data (more visible)
+            if (riskScore >= 8.0) return '#ff4757'; // Critical - Red
+            if (riskScore >= 6.0) return '#ff6b35'; // High - Orange  
+            if (riskScore >= 4.0) return '#ffaa00'; // Medium - Yellow
+            if (riskScore >= 2.0) return '#26de81'; // Low - Green
+            return '#4CAF50'; // Very low - Light Green
+        }
+        
+        function highlightBuilding(building) {
+            // Clear previous selection
+            clearBuildingHighlight();
+            
+            selectedBuilding = building;
+            
+            // Add highlight effect to all detail levels
+            if (building.highDetail) {
+                addHighlightEffect(building.highDetail);
+            }
+            if (building.mediumDetail) {
+                addHighlightEffect(building.mediumDetail);
+            }
+            if (building.lowDetail) {
+                addHighlightEffect(building.lowDetail);
+            }
+        }
+        
+        function addHighlightEffect(mesh) {
+            // Store original material
+            mesh.originalMaterial = mesh.material;
+            
+            // Create highlighted material
+            const highlightMaterial = mesh.material.clone();
+            highlightMaterial.emissive = new THREE.Color(0x444444);
+            highlightMaterial.transparent = true;
+            highlightMaterial.opacity = 0.8;
+            
+            mesh.material = highlightMaterial;
+        }
+        
+        function clearBuildingHighlight() {
+            if (selectedBuilding) {
+                // Restore original materials
+                if (selectedBuilding.highDetail && selectedBuilding.highDetail.originalMaterial) {
+                    selectedBuilding.highDetail.material = selectedBuilding.highDetail.originalMaterial;
+                }
+                if (selectedBuilding.mediumDetail && selectedBuilding.mediumDetail.originalMaterial) {
+                    selectedBuilding.mediumDetail.material = selectedBuilding.mediumDetail.originalMaterial;
+                }
+                if (selectedBuilding.lowDetail && selectedBuilding.lowDetail.originalMaterial) {
+                    selectedBuilding.lowDetail.material = selectedBuilding.lowDetail.originalMaterial;
+                }
+                
+                selectedBuilding = null;
+            }
+        }
+
+        function hideBuildingDetails() {
+            document.getElementById('buildingInfo').style.display = 'none';
+        }
+
+        function getRiskClass(score) {
+            if (score >= 8) return 'risk-critical';
+            if (score >= 6) return 'risk-high';
+            if (score >= 4) return 'risk-medium';
+            return 'risk-low';
+        }
+
+        function updateStats() {
+            const visibleBuildings = buildings.filter(b => b.visible);
+            const totalIssues = visibleBuildings.reduce((sum, b) => sum + (b.userData.issueCount || 0), 0);
+            const criticalBuildings = visibleBuildings.filter(b => b.userData.riskScore >= 7).length;
+            const healthyBuildings = visibleBuildings.filter(b => b.userData.riskScore < 4).length;
+            
+            document.getElementById('buildingCount').textContent = visibleBuildings.length;
+            document.getElementById('toolCount').textContent = activeTools.size;
+            document.getElementById('totalIssues').textContent = totalIssues;
+            document.getElementById('criticalBuildings').textContent = criticalBuildings;
+            document.getElementById('healthyBuildings').textContent = healthyBuildings;
+            document.getElementById('visibleBuildingCount').textContent = visibleBuildings.length;
+            document.getElementById('activeToolCount').textContent = activeTools.size;
+        }
+
+        // Enhanced Control functions
+        function adjustLighting(lightType, value) {
+            const intensity = parseFloat(value);
+            
+            switch(lightType) {
+                case 'ambient':
+                    const ambientLight = scene.getObjectByName('ambientLight');
+                    if (ambientLight) ambientLight.intensity = intensity;
+                    window.lightingSettings.ambient.intensity = intensity;
+                    break;
+                    
+                case 'directional':
+                    const directionalLight = scene.getObjectByName('directionalLight');
+                    if (directionalLight) directionalLight.intensity = intensity;
+                    window.lightingSettings.directional.intensity = intensity;
+                    break;
+                    
+                case 'point1':
+                    const pointLight1 = scene.getObjectByName('pointLight1');
+                    if (pointLight1) pointLight1.intensity = intensity;
+                    window.lightingSettings.point1.intensity = intensity;
+                    break;
+                    
+                case 'point2':
+                    const pointLight2 = scene.getObjectByName('pointLight2');
+                    if (pointLight2) pointLight2.intensity = intensity;
+                    window.lightingSettings.point2.intensity = intensity;
+                    break;
+            }
+        }
+
+        function toggleAllLights() {
+            const allEnabled = Object.values(window.lightingSettings).every(light => light.enabled);
+            
+            Object.keys(window.lightingSettings).forEach(lightType => {
+                window.lightingSettings[lightType].enabled = !allEnabled;
+                const intensity = !allEnabled ? window.lightingSettings[lightType].intensity : 0;
+                
+                switch(lightType) {
+                    case 'ambient':
+                        const ambientLight = scene.getObjectByName('ambientLight');
+                        if (ambientLight) ambientLight.intensity = intensity;
+                        break;
+                    case 'directional':
+                        const directionalLight = scene.getObjectByName('directionalLight');
+                        if (directionalLight) directionalLight.intensity = intensity;
+                        break;
+                    case 'point1':
+                        const pointLight1 = scene.getObjectByName('pointLight1');
+                        if (pointLight1) pointLight1.intensity = intensity;
+                        break;
+                    case 'point2':
+                        const pointLight2 = scene.getObjectByName('pointLight2');
+                        if (pointLight2) pointLight2.intensity = intensity;
+                        break;
+                }
+            });
+        }
+
+        function adjustFog(property, value) {
+            const fogValue = parseFloat(value);
+            
+            if (property === 'near') {
+                if (scene.fog) scene.fog.near = fogValue;
+                window.fogSettings.near = fogValue;
+            } else if (property === 'far') {
+                if (scene.fog) scene.fog.far = fogValue;
+                window.fogSettings.far = fogValue;
+            }
+        }
+
+        function toggleFog() {
+            window.fogSettings.enabled = !window.fogSettings.enabled;
+            
+            if (window.fogSettings.enabled) {
+                scene.fog = new THREE.Fog(0x87CEEB, window.fogSettings.near, window.fogSettings.far);
+            } else {
+                scene.fog = null;
+            }
+        }
+
+        function resetCamera() {
+            camera.position.set(40, 30, 40);
+            controls.target.set(0, 0, 0);
+            controls.update();
+        }
+
+        function startTour() {
+            alert('🎯 Guided tour functionality coming soon!');
+        }
+
+        // Speed Control Functions
+        function adjustMoveSpeed(value) {
+            moveSpeed = parseFloat(value);
+            updateControlSpeeds();
+        }
+
+        function adjustZoomSpeed(value) {
+            zoomSpeed = parseFloat(value);
+            updateControlSpeeds();
+        }
+
+        function adjustRotationSpeed(value) {
+            rotationSpeed = parseFloat(value);
+            updateControlSpeeds();
+        }
+
+        function updateControlSpeeds() {
+            // Update OrbitControls speeds
+            controls.rotateSpeed = rotationSpeed * 0.5;
+            controls.zoomSpeed = zoomSpeed * 0.8;
+            controls.panSpeed = moveSpeed * 0.3;
+            
+            // These are used in WASD movement (updateMovement function)
+            // moveSpeed is directly used in updateMovement()
+        }
+
+        // Enhanced Building Analysis Functions
+        function adjustBuildingScale(scale) {
+            const scaleValue = parseFloat(scale);
+            buildings.forEach(building => {
+                if (building && building.scale) {
+                    building.scale.x = scaleValue;
+                    building.scale.z = scaleValue;
+                }
+            });
+        }
+
+        function adjustBuildingHeight(multiplier) {
+            const heightMultiplier = parseFloat(multiplier);
+            buildings.forEach(building => {
+                if (building && building.scale) {
+                    building.scale.y = heightMultiplier;
+                    // Adjust position to keep buildings on ground
+                    const baseHeight = building.userData.height || 3;
+                    building.position.y = (baseHeight * heightMultiplier) / 2;
+                }
+            });
+        }
+
+        function centerOnBuildings() {
+            if (buildings.length === 0) return;
+            
+            const box = new THREE.Box3();
+            buildings.forEach(building => box.expandByObject(building));
+            
+            const center = box.getCenter(new THREE.Vector3());
+            const size = box.getSize(new THREE.Vector3());
+            
+            const maxSize = Math.max(size.x, size.y, size.z);
+            const distance = maxSize * 1.5;
+            
+            camera.position.copy(center);
+            camera.position.y += distance * 0.8;
+            camera.position.z += distance;
+            
+            controls.target.copy(center);
+            controls.update();
+        }
+
+        let wireframeMode = false;
+        function toggleWireframe() {
+            wireframeMode = !wireframeMode;
+            buildings.forEach(building => {
+                if (building && building.material) {
+                    building.material.wireframe = wireframeMode;
+                }
+            });
+        }
+
+        function exportView() {
+            // Take screenshot of current view
+            renderer.render(scene, camera);
+            const imgData = renderer.domElement.toDataURL('image/png');
+            
+            // Create download link
+            const link = document.createElement('a');
+            link.href = imgData;
+            link.download = `topolop-view-${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.png`;
+            link.click();
+            
+            console.log('📸 View exported successfully');
+        }
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            
+            // Update LOD based on camera distance
+            if (lodEnabled) {
+                updateLOD();
+            }
+            
+            renderer.render(scene, camera);
+        }
+        
+        function updateLOD() {
+            const cameraPosition = camera.position;
+            
+            buildings.forEach(building => {
+                if (!building.highDetail) return; // Skip non-LOD buildings
+                
+                const distance = cameraPosition.distanceTo(building.position);
+                
+                // Define LOD thresholds
+                const highDetailThreshold = 100;
+                const mediumDetailThreshold = 200;
+                
+                // Skip LOD switching for the currently selected/highlighted building
+                if (selectedBuilding === building) {
+                    // Keep highlighted building visible at all detail levels to prevent disappearing
+                    building.highDetail.visible = true;
+                    building.mediumDetail.visible = true;
+                    building.lowDetail.visible = true;
+                    return;
+                }
+                
+                if (distance < highDetailThreshold) {
+                    // Close up - show high detail
+                    building.highDetail.visible = true;
+                    building.mediumDetail.visible = false;
+                    building.lowDetail.visible = false;
+                } else if (distance < mediumDetailThreshold) {
+                    // Medium distance - show medium detail
+                    building.highDetail.visible = false;
+                    building.mediumDetail.visible = true;
+                    building.lowDetail.visible = false;
+                } else {
+                    // Far away - show low detail
+                    building.highDetail.visible = false;
+                    building.mediumDetail.visible = false;
+                    building.lowDetail.visible = true;
+                }
+            });
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initHybridCity);
+    </script>
+</body>
+</html>

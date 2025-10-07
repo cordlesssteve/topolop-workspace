@@ -1,0 +1,26 @@
+{
+  "name": "@topolop/npm-audit-analyzer",
+  "version": "1.0.0",
+  "description": "npm audit dependency vulnerability analyzer for Topolop",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "jest",
+    "analyze": "node src/cli.js"
+  },
+  "dependencies": {
+    "fs-extra": "^11.1.1",
+    "path": "^0.12.7"
+  },
+  "devDependencies": {
+    "jest": "^29.5.0"
+  },
+  "keywords": [
+    "topolop",
+    "dependency-analysis",
+    "npm-audit",
+    "vulnerability-scanning",
+    "security"
+  ],
+  "author": "Topolop Platform",
+  "license": "MIT"
+}

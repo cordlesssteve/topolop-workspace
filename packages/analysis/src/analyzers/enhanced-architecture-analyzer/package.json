@@ -1,0 +1,37 @@
+{
+  "name": "enhanced-architecture-analyzer",
+  "version": "1.0.0",
+  "description": "Enhanced Architecture Analysis Tools for Phase 2 - Sprint 5-6",
+  "main": "src/cli.js",
+  "scripts": {
+    "test": "jest",
+    "build": "tsc",
+    "lint": "eslint src/**/*.ts"
+  },
+  "dependencies": {
+    "madge": "^6.1.0",
+    "typescript": "^5.0.0",
+    "eslint": "^8.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "yargs": "^17.7.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/yargs": "^17.0.0",
+    "jest": "^29.0.0",
+    "typescript": "^5.0.0"
+  },
+  "keywords": [
+    "topolop",
+    "architecture",
+    "analysis",
+    "madge",
+    "typescript",
+    "eslint",
+    "technical-debt",
+    "complexity"
+  ],
+  "author": "Topolop Platform",
+  "license": "MIT"
+}

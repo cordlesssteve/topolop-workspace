@@ -1,0 +1,50 @@
+{
+  "name": "@topolop/github-codeql-analyzer",
+  "version": "1.0.0",
+  "description": "Topolop Layer 1 Data Source - GitHub CodeQL Semantic Analysis Integration",
+  "main": "src/index.js",
+  "keywords": [
+    "topolop",
+    "github",
+    "codeql",
+    "semantic-analysis",
+    "security",
+    "sast",
+    "code-analysis",
+    "sarif",
+    "layer1",
+    "data-source"
+  ],
+  "author": "Topolop Team",
+  "license": "MIT",
+  "dependencies": {
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "jest": "^29.0.0"
+  },
+  "scripts": {
+    "test": "jest",
+    "cli": "node src/cli.js"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/topolop/topolop"
+  },
+  "peerDependencies": {
+    "codeql": ">=2.0.0"
+  },
+  "topolop": {
+    "layer": 1,
+    "tier": 1,
+    "priority": "high",
+    "marketShare": "9.5%",
+    "category": "sast",
+    "integration": "cli",
+    "analysisType": "semantic",
+    "cityVisualization": true
+  }
+}

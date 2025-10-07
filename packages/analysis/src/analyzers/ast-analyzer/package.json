@@ -1,0 +1,22 @@
+{
+  "name": "@topolop/ast-analyzer",
+  "version": "0.1.0",
+  "description": "Multi-language AST analysis for Topolop",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "jest",
+    "dev": "node src/cli.js"
+  },
+  "dependencies": {
+    "tree-sitter": "^0.20.4",
+    "tree-sitter-javascript": "^0.20.1",
+    "tree-sitter-python": "^0.20.4",
+    "tree-sitter-java": "^0.20.2",
+    "tree-sitter-typescript": "^0.20.3",
+    "tree-sitter-go": "^0.20.0",
+    "tree-sitter-rust": "^0.20.4"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}

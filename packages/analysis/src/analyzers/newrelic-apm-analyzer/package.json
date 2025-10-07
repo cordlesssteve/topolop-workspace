@@ -1,0 +1,22 @@
+{
+  "name": "topolop-newrelic-apm-analyzer",
+  "version": "1.0.0",
+  "description": "New Relic APM integration for Topolop Phase 2 workflow analysis",
+  "main": "src/cli.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "ts-node src/newrelic-adapter.ts",
+    "test": "node src/cli.js test"
+  },
+  "keywords": ["topolop", "newrelic", "apm", "performance", "analysis"],
+  "author": "Topolop Platform",
+  "license": "MIT",
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "ts-node": "^10.9.0"
+  }
+}

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>🔍 Test Real Data Loading</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #0a0614; color: #e0e6ff; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: rgba(0,255,0,0.2); border: 1px solid #00ff00; }
+        .error { background: rgba(255,0,0,0.2); border: 1px solid #ff0000; }
+        .loading { background: rgba(255,255,0,0.2); border: 1px solid #ffff00; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Real Data Loading Test</h1>
+    <div id="status" class="status loading">⏳ Loading real analysis data...</div>
+    <div id="details"></div>
+    
+    <script>
+        const statusDiv = document.getElementById('status');
+        const detailsDiv = document.getElementById('details');
+        
+        console.log('Starting real data test...');
+        
+        // Test loading the JSON data
+        fetch('./real-unified-analysis.json')
+            .then(response => {
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                return response.json();
+            })
+            .then(data => {
+                console.log('Data loaded successfully:', data);
+                
+                statusDiv.className = 'status success';
+                statusDiv.innerHTML = '✅ Real data loaded successfully!';
+                
+                detailsDiv.innerHTML = `
+                    <h2>📊 Data Summary:</h2>
+                    <ul>
+                        <li><strong>Total Issues:</strong> ${data.summary?.totalIssues || 'N/A'}</li>
+                        <li><strong>Files Analyzed:</strong> ${data.summary?.filesAnalyzed || 'N/A'}</li>
+                        <li><strong>Tools Used:</strong> ${data.summary?.toolsCovered?.length || 'N/A'}</li>
+                        <li><strong>Hotspots:</strong> ${data.summary?.hotspots || 'N/A'}</li>
+                        <li><strong>Project Root:</strong> ${data.projectRoot || 'N/A'}</li>
+                        <li><strong>Issues Array Length:</strong> ${data.issues?.length || 'N/A'}</li>
+                    </ul>
+                    <h3>🔧 First Issue Example:</h3>
+                    <pre style="background: rgba(255,255,255,0.1); padding: 10px; border-radius: 5px; overflow: auto;">
+${JSON.stringify(data.issues?.[0], null, 2) || 'No issues found'}
+                    </pre>
+                `;
+                
+            })
+            .catch(error => {
+                console.error('Error loading data:', error);
+                
+                statusDiv.className = 'status error';
+                statusDiv.innerHTML = '❌ Failed to load real data';
+                
+                detailsDiv.innerHTML = `
+                    <h2>🚨 Error Details:</h2>
+                    <p><strong>Error:</strong> ${error.message}</p>
+                    <p><strong>Possible causes:</strong></p>
+                    <ul>
+                        <li>real-unified-analysis.json file not found or not accessible</li>
+                        <li>JSON file is corrupted or invalid</li>
+                        <li>HTTP server CORS or permission issues</li>
+                        <li>File path mismatch</li>
+                    </ul>
+                    
+                    <h3>🔧 Debugging Steps:</h3>
+                    <ol>
+                        <li>Check browser developer console for detailed errors</li>
+                        <li>Verify file exists at: <code>./real-unified-analysis.json</code></li>
+                        <li>Test direct JSON access: <a href="./real-unified-analysis.json" target="_blank">./real-unified-analysis.json</a></li>
+                    </ol>
+                `;
+            });
+    </script>
+</body>
+</html>

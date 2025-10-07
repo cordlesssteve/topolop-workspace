@@ -1,0 +1,27 @@
+{
+  "name": "@topolop/packj-analyzer",
+  "version": "1.0.0",
+  "description": "Packj Python package security analyzer for Topolop dependency analysis",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "jest",
+    "analyze": "node src/cli.js"
+  },
+  "dependencies": {
+    "fs-extra": "^11.1.1",
+    "path": "^0.12.7"
+  },
+  "devDependencies": {
+    "jest": "^29.5.0"
+  },
+  "keywords": [
+    "topolop",
+    "dependency-analysis",
+    "packj",
+    "python-security",
+    "vulnerability-scanning",
+    "pypi"
+  ],
+  "author": "Topolop Platform",
+  "license": "MIT"
+}

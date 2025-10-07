@@ -1,0 +1,365 @@
+{
+  "metadata": {
+    "analyzedAt": "2025-09-06T15:53:05.976Z",
+    "toolsUsed": [
+      "SonarQube",
+      "CodeClimate",
+      "Snyk",
+      "Semgrep",
+      "GitHub CodeQL",
+      "DeepSource"
+    ],
+    "projectPath": "/home/cordlesssteve/projects/topolop",
+    "analysisType": "tier1-unified"
+  },
+  "cityVisualization": {
+    "buildings": [
+      {
+        "id": "main-js",
+        "name": "main.js",
+        "filePath": "src/main.js",
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "shape": "box",
+        "height": 8.5,
+        "color": "#ff4444",
+        "sonarqube": {
+          "qualityGate": "FAILED",
+          "coverage": 67.5,
+          "codeSmells": 12,
+          "vulnerabilities": 3,
+          "bugs": 2,
+          "securityHotspots": 1,
+          "rating": {
+            "reliability": "C",
+            "security": "D",
+            "maintainability": "C"
+          }
+        },
+        "codeClimate": {
+          "maintainabilityGrade": "C",
+          "testCoverage": 65.2,
+          "technicalDebt": "3h 45m",
+          "codeSmells": 8,
+          "duplication": 12.3
+        },
+        "snyk": {
+          "vulnerabilities": {
+            "critical": 1,
+            "high": 2,
+            "medium": 3,
+            "low": 1
+          },
+          "dependencyCount": 45,
+          "licenseIssues": 2
+        },
+        "semgrep": {
+          "findings": [
+            {
+              "rule": "security.audit.sqli",
+              "severity": "HIGH",
+              "line": 42
+            },
+            {
+              "rule": "security.audit.xss",
+              "severity": "MEDIUM",
+              "line": 67
+            }
+          ],
+          "rulesets": [
+            "security",
+            "performance",
+            "correctness"
+          ]
+        }
+      },
+      {
+        "id": "utils-js",
+        "name": "utils.js",
+        "filePath": "src/utils.js",
+        "position": {
+          "x": 15,
+          "y": 0,
+          "z": 0
+        },
+        "shape": "cylinder",
+        "height": 4.2,
+        "color": "#ffaa00",
+        "sonarqube": {
+          "qualityGate": "WARN",
+          "coverage": 85.3,
+          "codeSmells": 3,
+          "vulnerabilities": 0,
+          "bugs": 1,
+          "rating": {
+            "reliability": "A",
+            "security": "A",
+            "maintainability": "B"
+          }
+        },
+        "codeClimate": {
+          "maintainabilityGrade": "B",
+          "testCoverage": 87.1,
+          "technicalDebt": "45m",
+          "codeSmells": 2,
+          "duplication": 3.1
+        },
+        "snyk": {
+          "vulnerabilities": {
+            "critical": 0,
+            "high": 0,
+            "medium": 1,
+            "low": 2
+          },
+          "dependencyCount": 12,
+          "licenseIssues": 0
+        }
+      },
+      {
+        "id": "config-js",
+        "name": "config.js",
+        "filePath": "src/config.js",
+        "position": {
+          "x": -15,
+          "y": 0,
+          "z": 15
+        },
+        "shape": "pyramid",
+        "height": 2.1,
+        "color": "#44ff44",
+        "sonarqube": {
+          "qualityGate": "PASSED",
+          "coverage": 95.8,
+          "codeSmells": 0,
+          "vulnerabilities": 0,
+          "bugs": 0,
+          "rating": {
+            "reliability": "A",
+            "security": "A",
+            "maintainability": "A"
+          }
+        },
+        "codeClimate": {
+          "maintainabilityGrade": "A",
+          "testCoverage": 96.4,
+          "technicalDebt": "0m",
+          "codeSmells": 0,
+          "duplication": 0
+        },
+        "snyk": {
+          "vulnerabilities": {
+            "critical": 0,
+            "high": 0,
+            "medium": 0,
+            "low": 0
+          },
+          "dependencyCount": 3,
+          "licenseIssues": 0
+        }
+      },
+      {
+        "id": "auth-js",
+        "name": "auth.js",
+        "filePath": "src/auth.js",
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": -15
+        },
+        "shape": "cone",
+        "height": 9.8,
+        "color": "#cc0000",
+        "sonarqube": {
+          "qualityGate": "FAILED",
+          "coverage": 45.2,
+          "codeSmells": 18,
+          "vulnerabilities": 8,
+          "bugs": 4,
+          "securityHotspots": 5,
+          "rating": {
+            "reliability": "D",
+            "security": "E",
+            "maintainability": "D"
+          }
+        },
+        "semgrep": {
+          "findings": [
+            {
+              "rule": "security.audit.crypto-weak-randomness",
+              "severity": "CRITICAL",
+              "line": 23
+            },
+            {
+              "rule": "security.audit.hardcoded-password",
+              "severity": "HIGH",
+              "line": 89
+            },
+            {
+              "rule": "security.audit.jwt-decode-verify",
+              "severity": "HIGH",
+              "line": 156
+            }
+          ]
+        },
+        "snyk": {
+          "vulnerabilities": {
+            "critical": 3,
+            "high": 2,
+            "medium": 1,
+            "low": 0
+          },
+          "dependencyCount": 28,
+          "licenseIssues": 1
+        }
+      }
+    ],
+    "roads": [
+      {
+        "id": "main-utils",
+        "start": "main-js",
+        "end": "utils-js",
+        "type": "imports",
+        "color": "#00ff88",
+        "width": 2,
+        "metadata": {
+          "sonarqube": {
+            "coupling": "HIGH",
+            "dependency_type": "STRONG"
+          },
+          "codeClimate": {
+            "complexity_impact": "MEDIUM"
+          }
+        }
+      },
+      {
+        "id": "main-config",
+        "start": "main-js",
+        "end": "config-js",
+        "type": "configuration",
+        "color": "#9C27B0",
+        "width": 1.5,
+        "metadata": {
+          "semgrep": {
+            "security_implications": [
+              "config-injection"
+            ]
+          },
+          "snyk": {
+            "license_compatibility": "OK"
+          }
+        }
+      },
+      {
+        "id": "main-auth",
+        "start": "main-js",
+        "end": "auth-js",
+        "type": "security",
+        "color": "#ff0000",
+        "width": 3,
+        "metadata": {
+          "sonarqube": {
+            "security_hotspot": true
+          },
+          "semgrep": {
+            "critical_path": true
+          },
+          "snyk": {
+            "vulnerability_chain": [
+              "CVE-2023-1234",
+              "CVE-2023-5678"
+            ]
+          }
+        }
+      }
+    ],
+    "districts": [
+      {
+        "name": "Core Application",
+        "buildings": [
+          "main-js",
+          "utils-js"
+        ],
+        "metrics": {
+          "averageQualityGate": "WARN",
+          "totalVulnerabilities": 10,
+          "coverageAverage": 76.4
+        }
+      },
+      {
+        "name": "Security Layer",
+        "buildings": [
+          "auth-js"
+        ],
+        "metrics": {
+          "averageQualityGate": "FAILED",
+          "totalVulnerabilities": 14,
+          "coverageAverage": 45.2,
+          "criticalFindings": 6
+        }
+      },
+      {
+        "name": "Configuration",
+        "buildings": [
+          "config-js"
+        ],
+        "metrics": {
+          "averageQualityGate": "PASSED",
+          "totalVulnerabilities": 0,
+          "coverageAverage": 95.8
+        }
+      }
+    ],
+    "tier1Summary": {
+      "toolCoverage": {
+        "sonarQube": {
+          "files": 4,
+          "coverage": 73.45,
+          "qualityGate": "WARN"
+        },
+        "codeClimate": {
+          "files": 4,
+          "maintainabilityGrade": "B",
+          "technicalDebt": "4h 30m"
+        },
+        "snyk": {
+          "vulnerabilities": 17,
+          "dependencies": 88,
+          "licenseIssues": 3
+        },
+        "semgrep": {
+          "findings": 5,
+          "criticalFindings": 1,
+          "rulesets": 3
+        },
+        "githubCodeQL": {
+          "alerts": 7,
+          "securityFindings": 4
+        },
+        "deepSource": {
+          "issues": 23,
+          "categories": [
+            "security",
+            "performance",
+            "style"
+          ]
+        }
+      },
+      "overallMetrics": {
+        "riskScore": 7.2,
+        "qualityScore": 6.8,
+        "securityScore": 4.1,
+        "maintainabilityScore": 7.3,
+        "testCoverageAverage": 73.45
+      },
+      "recommendations": [
+        "Address 3 critical vulnerabilities in auth.js",
+        "Improve test coverage in main.js (currently 67.5%)",
+        "Review security hotspots flagged by SonarQube",
+        "Update vulnerable dependencies identified by Snyk"
+      ]
+    }
+  }
+}

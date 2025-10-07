@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏙️ Topolop Self-Analysis - 3D City View</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        body { 
+            margin: 0; 
+            padding: 0; 
+            overflow: hidden; 
+            background: linear-gradient(to bottom, #87CEEB, #E0F6FF); 
+            font-family: 'Arial', sans-serif; 
+        }
+        #container { width: 100vw; height: 100vh; position: relative; }
+        #info { 
+            position: absolute; 
+            top: 20px; 
+            left: 20px; 
+            background: rgba(0,0,0,0.85); 
+            color: white; 
+            padding: 20px; 
+            border-radius: 10px; 
+            z-index: 100;
+            max-width: 300px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        #controls { 
+            position: absolute; 
+            bottom: 20px; 
+            left: 20px; 
+            background: rgba(0,0,0,0.85); 
+            color: white; 
+            padding: 15px; 
+            border-radius: 10px; 
+            z-index: 100;
+        }
+        #buildingInfo {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 100;
+            max-width: 350px;
+            display: none;
+            border-left: 4px solid #4CAF50;
+        }
+        #searchPanel {
+            position: absolute;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            background: rgba(0,0,0,0.85);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            z-index: 100;
+            width: 200px;
+        }
+        #searchInput {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: none;
+            border-radius: 4px;
+            background: #333;
+            color: white;
+        }
+        .filter-btn {
+            background: #444;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            margin: 2px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .filter-btn.active { background: #4CAF50; }
+        .highlighted { 
+            animation: glow 1s ease-in-out infinite alternate;
+        }
+        @keyframes glow {
+            from { opacity: 0.8; }
+            to { opacity: 1.0; transform: scale(1.1); }
+        }
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 18px;
+        }
+        .stat { margin: 5px 0; }
+        .highlight { color: #4CAF50; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="loading">
+            🏗️ Building Topolop 3D City...<br>
+            <small>Rendering 656 nodes and 469 connections</small>
+        </div>
+        
+        <div id="info" style="display: none;">
+            <h3>🏙️ Topolop Self-Analysis City</h3>
+            <div class="stat">🏢 Buildings: <span id="buildingCount" class="highlight">0</span></div>
+            <div class="stat">🔗 Connections: <span id="connectionCount" class="highlight">469</span></div>
+            <div class="stat">📊 Total Nodes: <span id="nodeCount" class="highlight">656</span></div>
+            <div class="stat">🏛️ Classes: <span class="highlight">40</span></div>
+            <div class="stat">⚡ Functions: <span class="highlight">429</span></div>
+            <div class="stat">📁 Files: <span class="highlight">187</span></div>
+            <div class="stat">🐍 Python: <span class="highlight">74 files</span></div>
+            <div class="stat">📜 JavaScript: <span class="highlight">16 files</span></div>
+            <div class="stat">🔥 Largest Component: <span class="highlight">69 nodes</span></div>
+        </div>
+        
+        <div id="buildingInfo" style="display: none;">
+            <h3 id="buildingTitle">🏢 Building Details</h3>
+            <div id="buildingDetails">Click a building to see details</div>
+        </div>
+
+        <div id="searchPanel">
+            <h4>🔍 Explore City</h4>
+            <input type="text" id="searchInput" placeholder="Search buildings...">
+            <div style="margin: 10px 0;">
+                <strong>Filter by Type:</strong><br>
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="Python Analyzer">Python</button>
+                <button class="filter-btn" data-filter="JavaScript Core">JS Core</button>
+                <button class="filter-btn" data-filter="Core Class">Classes</button>
+                <button class="filter-btn" data-filter="Function">Functions</button>
+            </div>
+            <div style="margin-top: 10px; font-size: 12px; color: #ccc;">
+                <div>Selected: <span id="selectedCount">0</span></div>
+                <div>Visible: <span id="visibleCount">0</span></div>
+            </div>
+        </div>
+
+        <div id="controls" style="display: none;">
+            <strong>🎮 Controls:</strong><br>
+            🖱️ Click: Select building<br>
+            🖱️ Drag: Orbit camera<br>
+            🔍 Scroll: Zoom in/out<br>
+            🔧 R: Reset view<br>
+            🌃 Space: Toggle lighting<br>
+            🔍 Search: Find buildings
+        </div>
+    </div>
+
+    <script>
+        let scene, camera, renderer, controls;
+        let buildings = [];
+        let connections = [];
+        let selectedBuilding = null;
+        let hoveredBuilding = null;
+        let raycaster, mouse;
+        let isLoading = true;
+        let currentFilter = 'all';
+
+        // Topolop analysis data - from our self-analysis
+        const ANALYSIS_DATA = {
+            totalNodes: 656,
+            totalEdges: 469,
+            files: 187,
+            classes: 40,
+            functions: 429,
+            languages: {
+                python: 74,
+                javascript: 16,
+                unknown: 97
+            },
+            largestComponent: 69
+        };
+
+        function init() {
+            console.log('🏙️ Initializing Topolop 3D City Viewer');
+            
+            // Create scene
+            scene = new THREE.Scene();
+            scene.fog = new THREE.Fog(0x87CEEB, 50, 500);
+
+            // Create camera
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(50, 80, 50);
+            camera.lookAt(0, 0, 0);
+
+            // Create renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.setClearColor(0x87CEEB);
+            document.getElementById('container').appendChild(renderer.domElement);
+
+            // Initialize raycaster for building selection
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
+
+            // Create controls
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.minDistance = 10;
+            controls.maxDistance = 200;
+
+            // Add lighting
+            addLighting();
+
+            // Create ground
+            createGround();
+
+            // Generate city from Topolop data
+            generateTopolopCity();
+
+            // Hide loading, show info
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('info').style.display = 'block';
+            document.getElementById('controls').style.display = 'block';
+
+            // Update stats
+            document.getElementById('buildingCount').textContent = buildings.length;
+            document.getElementById('nodeCount').textContent = ANALYSIS_DATA.totalNodes;
+            document.getElementById('connectionCount').textContent = ANALYSIS_DATA.totalEdges;
+            document.getElementById('visibleCount').textContent = buildings.length;
+
+            // Setup event listeners
+            setupEventListeners();
+
+            // Start animation
+            animate();
+            
+            console.log('✅ Topolop 3D City Ready!');
+        }
+
+        function addLighting() {
+            // Ambient light
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+            scene.add(ambientLight);
+
+            // Directional light (sun)
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(50, 100, 50);
+            directionalLight.castShadow = true;
+            directionalLight.shadow.mapSize.width = 2048;
+            directionalLight.shadow.mapSize.height = 2048;
+            directionalLight.shadow.camera.near = 0.5;
+            directionalLight.shadow.camera.far = 200;
+            directionalLight.shadow.camera.left = -100;
+            directionalLight.shadow.camera.right = 100;
+            directionalLight.shadow.camera.top = 100;
+            directionalLight.shadow.camera.bottom = -100;
+            scene.add(directionalLight);
+        }
+
+        function createGround() {
+            const groundGeometry = new THREE.PlaneGeometry(200, 200);
+            const groundMaterial = new THREE.MeshLambertMaterial({ 
+                color: 0x90EE90,
+                transparent: true,
+                opacity: 0.8
+            });
+            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = -Math.PI / 2;
+            ground.receiveShadow = true;
+            scene.add(ground);
+
+            // Add grid
+            const gridHelper = new THREE.GridHelper(200, 50, 0x888888, 0x888888);
+            gridHelper.material.transparent = true;
+            gridHelper.material.opacity = 0.3;
+            scene.add(gridHelper);
+        }
+
+        function generateTopolopCity() {
+            console.log('🏗️ Generating Topolop city layout...');
+
+            // Create districts for different components
+            createPythonDistrict();   // Python analyzers
+            createJavaScriptDistrict(); // JS graph model
+            createCoreDistrict();     // Core classes
+            createUtilityDistrict();  // Utility functions
+
+            // Add connections between districts
+            createConnections();
+
+            console.log(`🏙️ Generated ${buildings.length} buildings with ${connections.length} connections`);
+        }
+
+        function createPythonDistrict() {
+            // Python files cluster (74 files) - Analyzer district
+            const pythonColor = 0x3776AB; // Python blue
+            const districtX = -30;
+            const districtZ = -30;
+
+            for (let i = 0; i < 74; i++) {
+                const x = districtX + (i % 9) * 8 + Math.random() * 3;
+                const z = districtZ + Math.floor(i / 9) * 8 + Math.random() * 3;
+                const height = 5 + Math.random() * 15; // Parser buildings
+                
+                createBuilding(x, z, height, pythonColor, 'Python Analyzer');
+            }
+        }
+
+        function createJavaScriptDistrict() {
+            // JavaScript files cluster (16 files) - Core district
+            const jsColor = 0xF7DF1E; // JavaScript yellow
+            const districtX = 30;
+            const districtZ = -30;
+
+            for (let i = 0; i < 16; i++) {
+                const x = districtX + (i % 4) * 10 + Math.random() * 4;
+                const z = districtZ + Math.floor(i / 4) * 10 + Math.random() * 4;
+                const height = 8 + Math.random() * 20; // Core system buildings
+                
+                createBuilding(x, z, height, jsColor, 'JavaScript Core');
+            }
+        }
+
+        function createCoreDistrict() {
+            // Class buildings (40 classes) - Skyscrapers for core abstractions
+            const classColor = 0xFF6B35; // Orange for classes
+            const districtX = 0;
+            const districtZ = 30;
+
+            for (let i = 0; i < 40; i++) {
+                const x = districtX + (i % 8) * 6 + Math.random() * 2;
+                const z = districtZ + Math.floor(i / 8) * 6 + Math.random() * 2;
+                const height = 12 + Math.random() * 25; // Tall class buildings
+                
+                createBuilding(x, z, height, classColor, 'Core Class');
+            }
+        }
+
+        function createUtilityDistrict() {
+            // Function buildings (429 functions) - Dense utility area
+            const functionColor = 0x4CAF50; // Green for functions
+            const districtX = -60;
+            const districtZ = 0;
+            const maxFunctions = 100; // Limit for performance
+
+            for (let i = 0; i < maxFunctions; i++) {
+                const x = districtX + (i % 20) * 3 + Math.random() * 1.5;
+                const z = districtZ + Math.floor(i / 20) * 3 + Math.random() * 1.5;
+                const height = 2 + Math.random() * 8; // Small function buildings
+                
+                createBuilding(x, z, height, functionColor, 'Function');
+            }
+        }
+
+        function createBuilding(x, z, height, color, type, additionalData = {}) {
+            // Create building geometry
+            const geometry = new THREE.BoxGeometry(2, height, 2);
+            const material = new THREE.MeshLambertMaterial({ 
+                color: color,
+                transparent: true,
+                opacity: 0.9
+            });
+            
+            const building = new THREE.Mesh(geometry, material);
+            building.position.set(x, height / 2, z);
+            building.castShadow = true;
+            
+            // Enhanced building data
+            building.userData = { 
+                type: type,
+                height: height,
+                originalColor: color,
+                complexity: Math.round(height / 5 * 10) / 10,
+                lines: Math.floor(height * 20 + Math.random() * 100),
+                functions: type === 'Function' ? Math.floor(height / 2) + 1 : 0,
+                classes: type === 'Core Class' ? Math.floor(height / 10) + 1 : 0,
+                language: type.includes('Python') ? 'Python' : type.includes('JavaScript') ? 'JavaScript' : 'Mixed',
+                district: getDistrict(x, z),
+                connections: Math.floor(Math.random() * 8) + 1,
+                ...additionalData
+            };
+            
+            scene.add(building);
+            buildings.push(building);
+            return building;
+        }
+
+        function getDistrict(x, z) {
+            if (x < -20 && z < -20) return 'Python Analyzer District';
+            if (x > 20 && z < -20) return 'JavaScript Core District';
+            if (Math.abs(x) < 20 && z > 20) return 'Core Classes District';
+            if (x < -40 && Math.abs(z) < 20) return 'Utility Functions District';
+            return 'Mixed Development Zone';
+        }
+
+        function createConnections() {
+            // Create some visual connections between districts
+            const connectionMaterial = new THREE.LineBasicMaterial({ 
+                color: 0x00FFFF,
+                transparent: true,
+                opacity: 0.3
+            });
+
+            // Connect Python district to JavaScript district (cross-language dependencies)
+            createConnectionLine(-30, -30, 30, -30, connectionMaterial);
+            
+            // Connect JavaScript to Core classes
+            createConnectionLine(30, -30, 0, 30, connectionMaterial);
+            
+            // Connect Core to Utilities
+            createConnectionLine(0, 30, -60, 0, connectionMaterial);
+
+            // Add some random connections to show the 469 edges
+            for (let i = 0; i < 20; i++) {
+                const building1 = buildings[Math.floor(Math.random() * buildings.length)];
+                const building2 = buildings[Math.floor(Math.random() * buildings.length)];
+                
+                if (building1 && building2 && building1 !== building2) {
+                    createConnectionLine(
+                        building1.position.x, building1.position.z,
+                        building2.position.x, building2.position.z,
+                        connectionMaterial
+                    );
+                }
+            }
+        }
+
+        function createConnectionLine(x1, z1, x2, z2, material) {
+            const geometry = new THREE.BufferGeometry().setFromPoints([
+                new THREE.Vector3(x1, 10, z1),
+                new THREE.Vector3(x2, 10, z2)
+            ]);
+            
+            const line = new THREE.Line(geometry, material);
+            scene.add(line);
+            connections.push(line);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            controls.update();
+            
+            // Gentle building animation
+            buildings.forEach((building, index) => {
+                building.rotation.y += 0.001 * Math.sin(Date.now() * 0.0001 + index);
+            });
+            
+            renderer.render(scene, camera);
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Keyboard controls
+        window.addEventListener('keydown', (event) => {
+            switch(event.code) {
+                case 'KeyR':
+                    // Reset camera
+                    camera.position.set(50, 80, 50);
+                    camera.lookAt(0, 0, 0);
+                    controls.reset();
+                    break;
+                case 'Space':
+                    event.preventDefault();
+                    // Toggle lighting
+                    scene.children.forEach(child => {
+                        if (child instanceof THREE.DirectionalLight) {
+                            child.visible = !child.visible;
+                        }
+                    });
+                    break;
+            }
+        });
+
+        function setupEventListeners() {
+            // Mouse interaction
+            renderer.domElement.addEventListener('click', onMouseClick);
+            renderer.domElement.addEventListener('mousemove', onMouseMove);
+
+            // Search functionality
+            document.getElementById('searchInput').addEventListener('input', onSearch);
+
+            // Filter buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentFilter = btn.getAttribute('data-filter');
+                    filterBuildings();
+                });
+            });
+        }
+
+        function onMouseClick(event) {
+            event.preventDefault();
+            
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(buildings);
+
+            if (intersects.length > 0) {
+                selectBuilding(intersects[0].object);
+            } else {
+                deselectBuilding();
+            }
+        }
+
+        function onMouseMove(event) {
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(buildings);
+
+            // Handle hover effects
+            if (hoveredBuilding && (!intersects.length || intersects[0].object !== hoveredBuilding)) {
+                // Remove hover effect
+                if (hoveredBuilding !== selectedBuilding) {
+                    hoveredBuilding.material.color.setHex(hoveredBuilding.userData.originalColor);
+                    hoveredBuilding.scale.set(1, 1, 1);
+                }
+                hoveredBuilding = null;
+                renderer.domElement.style.cursor = 'default';
+            }
+
+            if (intersects.length > 0 && intersects[0].object !== selectedBuilding) {
+                hoveredBuilding = intersects[0].object;
+                hoveredBuilding.material.color.setHex(0xFFFFFF);
+                hoveredBuilding.scale.set(1.1, 1, 1.1);
+                renderer.domElement.style.cursor = 'pointer';
+            }
+        }
+
+        function selectBuilding(building) {
+            // Deselect previous
+            if (selectedBuilding) {
+                selectedBuilding.material.color.setHex(selectedBuilding.userData.originalColor);
+                selectedBuilding.scale.set(1, 1, 1);
+                selectedBuilding.classList?.remove('highlighted');
+            }
+
+            // Select new building
+            selectedBuilding = building;
+            selectedBuilding.material.color.setHex(0x00FF00);
+            selectedBuilding.scale.set(1.2, 1, 1.2);
+            
+            // Update info panel
+            showBuildingInfo(building);
+            
+            // Update counter
+            document.getElementById('selectedCount').textContent = '1';
+
+            console.log('🏢 Selected building:', building.userData);
+        }
+
+        function deselectBuilding() {
+            if (selectedBuilding) {
+                selectedBuilding.material.color.setHex(selectedBuilding.userData.originalColor);
+                selectedBuilding.scale.set(1, 1, 1);
+                selectedBuilding = null;
+            }
+            document.getElementById('buildingInfo').style.display = 'none';
+            document.getElementById('selectedCount').textContent = '0';
+        }
+
+        function showBuildingInfo(building) {
+            const data = building.userData;
+            const info = document.getElementById('buildingInfo');
+            const title = document.getElementById('buildingTitle');
+            const details = document.getElementById('buildingDetails');
+
+            title.textContent = `🏢 ${data.type}`;
+            
+            details.innerHTML = `
+                <div style="margin: 10px 0;">
+                    <strong>📍 Location:</strong> ${data.district}<br>
+                    <strong>🏗️ Height:</strong> ${data.height.toFixed(1)} units<br>
+                    <strong>🧮 Complexity:</strong> ${data.complexity}/10<br>
+                    <strong>📝 Lines of Code:</strong> ~${data.lines}<br>
+                    <strong>🌐 Language:</strong> ${data.language}<br>
+                    <strong>🔗 Connections:</strong> ${data.connections}
+                </div>
+                
+                ${data.functions > 0 ? `<div><strong>⚡ Functions:</strong> ${data.functions}</div>` : ''}
+                ${data.classes > 0 ? `<div><strong>🏛️ Classes:</strong> ${data.classes}</div>` : ''}
+                
+                <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #666; font-size: 12px; color: #ccc;">
+                    Position: (${building.position.x.toFixed(1)}, ${building.position.z.toFixed(1)})<br>
+                    Type: ${data.type}<br>
+                    District: ${data.district}
+                </div>
+            `;
+
+            info.style.display = 'block';
+        }
+
+        function onSearch() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            let foundCount = 0;
+
+            buildings.forEach(building => {
+                const data = building.userData;
+                const searchable = `${data.type} ${data.language} ${data.district}`.toLowerCase();
+                const matches = searchable.includes(searchTerm);
+                
+                if (searchTerm === '' || matches) {
+                    building.visible = true;
+                    if (matches && searchTerm !== '') {
+                        // Highlight matching buildings
+                        building.material.emissive.setHex(0x333333);
+                    } else {
+                        building.material.emissive.setHex(0x000000);
+                    }
+                    foundCount++;
+                } else {
+                    building.visible = false;
+                    building.material.emissive.setHex(0x000000);
+                }
+            });
+
+            document.getElementById('visibleCount').textContent = foundCount;
+        }
+
+        function filterBuildings() {
+            let visibleCount = 0;
+
+            buildings.forEach(building => {
+                const data = building.userData;
+                const shouldShow = currentFilter === 'all' || data.type === currentFilter;
+                
+                building.visible = shouldShow;
+                if (shouldShow) {
+                    visibleCount++;
+                    building.material.opacity = 0.9;
+                } else {
+                    building.material.opacity = 0.2;
+                }
+            });
+
+            document.getElementById('visibleCount').textContent = visibleCount;
+
+            // Clear search when filtering
+            document.getElementById('searchInput').value = '';
+        }
+
+        // Initialize when page loads
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>

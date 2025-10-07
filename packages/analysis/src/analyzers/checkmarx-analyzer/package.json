@@ -1,0 +1,43 @@
+{
+  "name": "@topolop/checkmarx-analyzer",
+  "version": "1.0.0",
+  "description": "Checkmarx comprehensive SAST analysis integration for Topolop - Layer 1 Data Source",
+  "main": "src/index.js",
+  "bin": {
+    "topolop-checkmarx": "src/cli.js"
+  },
+  "keywords": [
+    "checkmarx",
+    "comprehensive-sast",
+    "static-analysis",
+    "application-security",
+    "vulnerability-scanning",
+    "source-code-analysis",
+    "security-testing",
+    "sast",
+    "analysis",
+    "topolop",
+    "devtools",
+    "layer1",
+    "tier1"
+  ],
+  "dependencies": {
+    "fs-extra": "^11.1.1",
+    "axios": "^1.4.0",
+    "commander": "^9.4.0"
+  },
+  "devDependencies": {
+    "jest": "^29.5.0"
+  },
+  "scripts": {
+    "test": "jest",
+    "cli": "node src/cli.js"
+  },
+  "author": "Topolop",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cordlesssteve/topolop.git",
+    "directory": "src/analyzers/checkmarx-analyzer"
+  }
+}

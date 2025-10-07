@@ -1,0 +1,42 @@
+{
+  "name": "@topolop/codacy-analyzer",
+  "version": "1.0.0",
+  "description": "Codacy code quality analysis integration for Topolop - Layer 1 Data Source",
+  "main": "src/index.js",
+  "bin": {
+    "topolop-codacy": "src/cli.js"
+  },
+  "keywords": [
+    "codacy",
+    "code-quality",
+    "static-analysis",
+    "quality-metrics",
+    "issue-analysis",
+    "grade-assessment",
+    "repository-analysis",
+    "analysis",
+    "topolop",
+    "devtools",
+    "layer1",
+    "tier1"
+  ],
+  "dependencies": {
+    "fs-extra": "^11.1.1",
+    "axios": "^1.4.0",
+    "commander": "^9.4.0"
+  },
+  "devDependencies": {
+    "jest": "^29.5.0"
+  },
+  "scripts": {
+    "test": "jest",
+    "cli": "node src/cli.js"
+  },
+  "author": "Topolop",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cordlesssteve/topolop.git",
+    "directory": "src/analyzers/codacy-analyzer"
+  }
+}

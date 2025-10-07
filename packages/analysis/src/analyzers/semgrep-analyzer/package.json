@@ -1,0 +1,47 @@
+{
+  "name": "@topolop/semgrep-analyzer",
+  "version": "1.0.0",
+  "description": "Topolop Layer 1 Data Source - Semgrep SAST Integration",
+  "main": "src/index.js",
+  "keywords": [
+    "topolop",
+    "semgrep",
+    "sast",
+    "static-analysis", 
+    "security",
+    "code-analysis",
+    "layer1",
+    "data-source"
+  ],
+  "author": "Topolop Team",
+  "license": "MIT",
+  "dependencies": {
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "jest": "^29.0.0"
+  },
+  "scripts": {
+    "test": "jest",
+    "cli": "node src/cli.js"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/topolop/topolop"
+  },
+  "peerDependencies": {
+    "semgrep": ">=1.0.0"
+  },
+  "topolop": {
+    "layer": 1,
+    "tier": 1,
+    "priority": "high",
+    "marketShare": "12.1%",
+    "category": "sast",
+    "integration": "cli",
+    "cityVisualization": true
+  }
+}

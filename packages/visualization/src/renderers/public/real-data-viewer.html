@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 REAL ANALYSIS DATA - Topolop Security Visualization</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        body { 
+            margin: 0; 
+            padding: 0; 
+            overflow: hidden; 
+            background: linear-gradient(to bottom, #87CEEB, #E0F6FF); 
+            font-family: 'Arial', sans-serif; 
+            color: #e0e6ff;
+        }
+        #container { width: 100vw; height: 100vh; position: relative; }
+        
+        /* Real Data Analysis Panel */
+        #info { 
+            position: absolute; 
+            top: 20px; 
+            left: 20px; 
+            background: rgba(10,6,20,0.95); 
+            color: #e0e6ff; 
+            padding: 20px; 
+            border-radius: 12px; 
+            z-index: 100;
+            max-width: 350px;
+            border: 2px solid #00ff88;
+        }
+
+        #info h2 { 
+            margin: 0 0 15px 0; 
+            color: #00ff88; 
+            font-size: 18px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .stat-item {
+            background: rgba(0,255,136,0.1);
+            padding: 8px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #00ff88;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #a0a6bf;
+            margin-top: 2px;
+        }
+
+        /* Tool Toggle Buttons */
+        .tool-toggles {
+            margin: 15px 0;
+        }
+
+        .tool-button {
+            background: rgba(0,255,136,0.2);
+            border: 1px solid #00ff88;
+            color: #00ff88;
+            padding: 6px 12px;
+            margin: 3px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.3s;
+        }
+
+        .tool-button.active {
+            background: #00ff88;
+            color: #0a0614;
+        }
+
+        .tool-button:hover {
+            background: rgba(0,255,136,0.4);
+        }
+
+        /* Controls Panel */
+        #controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(10,6,20,0.95);
+            color: #e0e6ff;
+            padding: 15px;
+            border-radius: 12px;
+            z-index: 100;
+            min-width: 200px;
+        }
+
+        .control-group {
+            margin: 10px 0;
+        }
+
+        .control-group label {
+            display: block;
+            font-size: 12px;
+            color: #a0a6bf;
+            margin-bottom: 5px;
+        }
+
+        .control-group input[type="range"] {
+            width: 100%;
+        }
+
+        .control-button {
+            background: rgba(224,230,255,0.1);
+            border: 1px solid #e0e6ff;
+            color: #e0e6ff;
+            padding: 8px 16px;
+            margin: 5px 2px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .control-button:hover {
+            background: rgba(224,230,255,0.2);
+        }
+
+        /* Loading indicator */
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            color: #00ff88;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 16px;
+            z-index: 200;
+        }
+
+        .legend {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(10,6,20,0.95);
+            padding: 15px;
+            border-radius: 12px;
+            z-index: 100;
+        }
+
+        .legend h3 {
+            margin: 0 0 10px 0;
+            color: #00ff88;
+            font-size: 14px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+            font-size: 12px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div id="loading">🔍 Loading Real Analysis Data (438 Issues)...</div>
+    <div id="container"></div>
+    
+    <!-- Real Analysis Data Info Panel -->
+    <div id="info">
+        <h2>🔍 REAL SECURITY ANALYSIS</h2>
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-value" id="total-issues">438</div>
+                <div class="stat-label">Total Issues</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="files-analyzed">160</div>
+                <div class="stat-label">Files Analyzed</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="tools-used">2</div>
+                <div class="stat-label">Tools Used</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="hotspots">0</div>
+                <div class="stat-label">Hotspots</div>
+            </div>
+        </div>
+
+        <div class="tool-toggles">
+            <div class="tool-button active" data-tool="all">All Tools</div>
+            <div class="tool-button" data-tool="Semgrep">Semgrep (245)</div>
+            <div class="tool-button" data-tool="CodeQL">CodeQL (193)</div>
+        </div>
+
+        <div style="margin-top: 15px;">
+            <div style="font-size: 12px; color: #a0a6bf;">Data Source: Real Analysis Results</div>
+            <div style="font-size: 11px; color: #666;">Semgrep + CodeQL security findings</div>
+        </div>
+    </div>
+
+    <!-- Controls Panel -->
+    <div id="controls">
+        <div class="control-group">
+            <label>Building Scale</label>
+            <input type="range" id="building-scale" min="0.5" max="2.0" step="0.1" value="1.0">
+        </div>
+        <div class="control-group">
+            <label>Height Multiplier</label>
+            <input type="range" id="height-multiplier" min="0.5" max="3.0" step="0.1" value="1.0">
+        </div>
+        <div class="control-group">
+            <button class="control-button" id="center-view">Center View</button>
+            <button class="control-button" id="wireframe-toggle">Wireframe</button>
+        </div>
+        <div class="control-group">
+            <button class="control-button" id="export-view">Export PNG</button>
+        </div>
+    </div>
+
+    <!-- Severity Legend -->
+    <div class="legend">
+        <h3>Issue Severity</h3>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #ff0000;"></div>
+            <span>Critical/High</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #ff8800;"></div>
+            <span>Medium</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #ffff00;"></div>
+            <span>Low</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #00ff00;"></div>
+            <span>Info</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #888888;"></div>
+            <span>No Issues</span>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let scene, camera, renderer, controls;
+        let buildings = [];
+        let realAnalysisData = null;
+        let activeTools = ['all'];
+        let isWireframe = false;
+
+        // Initialize 3D scene
+        function initScene() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x87CEEB);
+            scene.fog = new THREE.Fog(0x87CEEB, 100, 800);
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
+            camera.position.set(200, 150, 200);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            document.getElementById('container').appendChild(renderer.domElement);
+
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+
+            // Add lighting
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(200, 300, 100);
+            directionalLight.castShadow = true;
+            directionalLight.shadow.mapSize.width = 2048;
+            directionalLight.shadow.mapSize.height = 2048;
+            scene.add(directionalLight);
+
+            // Add ground plane
+            const groundGeometry = new THREE.PlaneGeometry(1000, 1000);
+            const groundMaterial = new THREE.MeshLambertMaterial({ color: 0x2a2a2a });
+            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = -Math.PI / 2;
+            ground.receiveShadow = true;
+            scene.add(ground);
+        }
+
+        // Load real analysis data
+        async function loadRealAnalysisData() {
+            try {
+                const response = await fetch('./real-unified-analysis.json');
+                realAnalysisData = await response.json();
+                console.log('Real analysis data loaded:', realAnalysisData.summary);
+                
+                // Create buildings from real data
+                createBuildingsFromRealData();
+                
+                document.getElementById('loading').style.display = 'none';
+            } catch (error) {
+                console.error('Error loading real analysis data:', error);
+                document.getElementById('loading').innerHTML = '❌ Error loading real analysis data. Using demo data instead.';
+                
+                // Fallback to demo data
+                createDemoBuildingsForTesting();
+                setTimeout(() => {
+                    document.getElementById('loading').style.display = 'none';
+                }, 2000);
+            }
+        }
+
+        // Create demo buildings for testing when real data fails
+        function createDemoBuildingsForTesting() {
+            console.log('Creating demo buildings for testing...');
+            
+            const gridSize = 15;
+            const spacing = 25;
+            
+            for (let i = 0; i < 160; i++) {
+                const x = (i % gridSize) * spacing - (gridSize * spacing) / 2;
+                const z = Math.floor(i / gridSize) * spacing - (gridSize * spacing) / 2;
+                
+                // Create varying heights
+                const height = 10 + Math.random() * 40;
+                const width = 8 + Math.random() * 4;
+                const depth = 8 + Math.random() * 4;
+                
+                // Create different colors for demo
+                let color;
+                const severity = Math.random();
+                if (severity > 0.8) color = 0xff0000; // Red
+                else if (severity > 0.6) color = 0xff8800; // Orange
+                else if (severity > 0.4) color = 0xffff00; // Yellow
+                else if (severity > 0.2) color = 0x00ff00; // Green
+                else color = 0x888888; // Gray
+                
+                const geometry = new THREE.BoxGeometry(width, height, depth);
+                const material = new THREE.MeshLambertMaterial({ 
+                    color: color,
+                    transparent: true,
+                    opacity: 0.8
+                });
+
+                const building = new THREE.Mesh(geometry, material);
+                building.position.set(x, height / 2, z);
+                building.castShadow = true;
+                building.receiveShadow = true;
+
+                // Store demo metadata
+                building.userData = {
+                    filePath: `demo-file-${i}.js`,
+                    issueCount: Math.floor(Math.random() * 10) + 1,
+                    tools: ['Semgrep', 'CodeQL']
+                };
+
+                buildings.push(building);
+                scene.add(building);
+            }
+            
+            console.log(`Created ${buildings.length} demo buildings`);
+        }
+
+        // Create 3D buildings from real analysis data
+        function createBuildingsFromRealData() {
+            if (!realAnalysisData) return;
+
+            // Clear existing buildings
+            buildings.forEach(building => scene.remove(building));
+            buildings = [];
+
+            // Group issues by file
+            const fileIssues = {};
+            realAnalysisData.issues.forEach(issue => {
+                const path = issue.entity.canonicalPath;
+                if (!fileIssues[path]) {
+                    fileIssues[path] = [];
+                }
+                fileIssues[path].push(issue);
+            });
+
+            // Create buildings for files with issues
+            let buildingIndex = 0;
+            const gridSize = Math.ceil(Math.sqrt(Object.keys(fileIssues).length));
+
+            Object.entries(fileIssues).forEach(([filePath, issues]) => {
+                if (shouldShowFile(filePath, issues)) {
+                    const building = createBuildingForFile(filePath, issues, buildingIndex, gridSize);
+                    buildings.push(building);
+                    scene.add(building);
+                    buildingIndex++;
+                }
+            });
+
+            console.log(`Created ${buildings.length} buildings from real analysis data`);
+        }
+
+        // Check if file should be shown based on active tool filters
+        function shouldShowFile(filePath, issues) {
+            if (activeTools.includes('all')) return true;
+            
+            return issues.some(issue => activeTools.includes(issue.toolName));
+        }
+
+        // Create individual building for a file
+        function createBuildingForFile(filePath, issues, index, gridSize) {
+            // Calculate position
+            const spacing = 25;
+            const x = (index % gridSize) * spacing - (gridSize * spacing) / 2;
+            const z = Math.floor(index / gridSize) * spacing - (gridSize * spacing) / 2;
+
+            // Calculate building height based on issue count and severity
+            let height = 5 + issues.length * 2;
+            let severityBonus = 0;
+            
+            issues.forEach(issue => {
+                switch (issue.severity) {
+                    case 'critical': severityBonus += 10; break;
+                    case 'high': severityBonus += 7; break;
+                    case 'medium': severityBonus += 4; break;
+                    case 'low': severityBonus += 2; break;
+                    case 'info': severityBonus += 1; break;
+                }
+            });
+
+            height += severityBonus;
+            height = Math.min(height, 100); // Cap maximum height
+
+            // Choose building color based on dominant severity
+            const color = getBuildingColor(issues);
+
+            // Create building geometry
+            const width = 8 + Math.random() * 4;
+            const depth = 8 + Math.random() * 4;
+            const geometry = new THREE.BoxGeometry(width, height, depth);
+            
+            const material = new THREE.MeshLambertMaterial({ 
+                color: color,
+                transparent: true,
+                opacity: 0.8
+            });
+
+            const building = new THREE.Mesh(geometry, material);
+            building.position.set(x, height / 2, z);
+            building.castShadow = true;
+            building.receiveShadow = true;
+
+            // Store metadata
+            building.userData = {
+                filePath: filePath,
+                issues: issues,
+                issueCount: issues.length,
+                tools: [...new Set(issues.map(i => i.toolName))]
+            };
+
+            return building;
+        }
+
+        // Get building color based on issue severity
+        function getBuildingColor(issues) {
+            const severityCounts = {
+                critical: 0,
+                high: 0,
+                medium: 0,
+                low: 0,
+                info: 0
+            };
+
+            issues.forEach(issue => {
+                severityCounts[issue.severity] = (severityCounts[issue.severity] || 0) + 1;
+            });
+
+            // Return color based on highest severity present
+            if (severityCounts.critical > 0) return 0xff0000; // Red
+            if (severityCounts.high > 0) return 0xff4400; // Orange-red
+            if (severityCounts.medium > 0) return 0xff8800; // Orange
+            if (severityCounts.low > 0) return 0xffff00; // Yellow
+            if (severityCounts.info > 0) return 0x00ff00; // Green
+            
+            return 0x888888; // Gray (no issues)
+        }
+
+        // Tool toggle functionality
+        function setupToolToggles() {
+            document.querySelectorAll('.tool-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    const tool = button.dataset.tool;
+                    
+                    if (tool === 'all') {
+                        // Clear all other selections and select 'all'
+                        document.querySelectorAll('.tool-button').forEach(b => b.classList.remove('active'));
+                        button.classList.add('active');
+                        activeTools = ['all'];
+                    } else {
+                        // Toggle individual tool
+                        document.querySelector('[data-tool="all"]').classList.remove('active');
+                        button.classList.toggle('active');
+                        
+                        if (button.classList.contains('active')) {
+                            if (!activeTools.includes(tool)) activeTools.push(tool);
+                            activeTools = activeTools.filter(t => t !== 'all');
+                        } else {
+                            activeTools = activeTools.filter(t => t !== tool);
+                        }
+                        
+                        // If no tools selected, select all
+                        if (activeTools.length === 0) {
+                            document.querySelector('[data-tool="all"]').classList.add('active');
+                            activeTools = ['all'];
+                        }
+                    }
+                    
+                    console.log('Active tools:', activeTools);
+                    createBuildingsFromRealData(); // Refresh buildings
+                });
+            });
+        }
+
+        // Control functionality
+        function setupControls() {
+            // Building scale control
+            document.getElementById('building-scale').addEventListener('input', (e) => {
+                const scale = parseFloat(e.target.value);
+                buildings.forEach(building => {
+                    building.scale.set(scale, 1, scale);
+                });
+            });
+
+            // Height multiplier control
+            document.getElementById('height-multiplier').addEventListener('input', (e) => {
+                const multiplier = parseFloat(e.target.value);
+                buildings.forEach(building => {
+                    building.scale.y = multiplier;
+                });
+            });
+
+            // Center view
+            document.getElementById('center-view').addEventListener('click', () => {
+                controls.reset();
+                camera.position.set(200, 150, 200);
+                controls.update();
+            });
+
+            // Wireframe toggle
+            document.getElementById('wireframe-toggle').addEventListener('click', () => {
+                isWireframe = !isWireframe;
+                buildings.forEach(building => {
+                    building.material.wireframe = isWireframe;
+                });
+                document.getElementById('wireframe-toggle').textContent = isWireframe ? 'Solid' : 'Wireframe';
+            });
+
+            // Export view
+            document.getElementById('export-view').addEventListener('click', () => {
+                const link = document.createElement('a');
+                link.download = 'topolop-real-analysis-view.png';
+                link.href = renderer.domElement.toDataURL();
+                link.click();
+            });
+        }
+
+        // Handle window resize
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // Initialize everything
+        async function init() {
+            initScene();
+            setupToolToggles();
+            setupControls();
+            await loadRealAnalysisData();
+            
+            window.addEventListener('resize', onWindowResize);
+            animate();
+        }
+
+        // Start the application
+        init();
+    </script>
+</body>
+</html>

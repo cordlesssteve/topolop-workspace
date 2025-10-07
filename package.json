@@ -1,0 +1,30 @@
+{
+  "name": "topolop-workspace",
+  "version": "0.1.0",
+  "description": "Topolop Monorepo - Multi-Metaphor Codebase Visualization System",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "clean": "npm run clean --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "dev": "npm run dev --workspaces --if-present"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cordlesssteve/topolop-workspace.git"
+  },
+  "license": "MIT",
+  "author": "cordlesssteve"
+}

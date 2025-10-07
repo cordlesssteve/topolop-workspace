@@ -1,0 +1,27 @@
+{
+  "name": "@topolop/osv-analyzer",
+  "version": "1.0.0",
+  "description": "OSV-Scanner vulnerability analyzer for Topolop dependency security analysis",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "jest",
+    "analyze": "node src/cli.js"
+  },
+  "dependencies": {
+    "fs-extra": "^11.1.1",
+    "path": "^0.12.7"
+  },
+  "devDependencies": {
+    "jest": "^29.5.0"
+  },
+  "keywords": [
+    "topolop",
+    "dependency-analysis",
+    "osv-scanner",
+    "vulnerability-scanning",
+    "security",
+    "multi-ecosystem"
+  ],
+  "author": "Topolop Platform",
+  "license": "MIT"
+}

@@ -1,0 +1,42 @@
+{
+  "name": "@topolop/shared-types",
+  "version": "0.1.0",
+  "description": "Shared type definitions for Topolop analysis and visualization components",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "publishConfig": {
+    "access": "restricted",
+    "registry": "http://localhost:4873"
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run clean && npm run build",
+    "test": "jest"
+  },
+  "keywords": [
+    "topolop",
+    "types",
+    "typescript",
+    "analysis",
+    "visualization"
+  ],
+  "author": "cordlesssteve",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jest": "^29.5.0",
+    "@types/node": "^20.0.0",
+    "jest": "^29.5.0",
+    "ts-jest": "^29.1.0",
+    "typescript": "^5.0.0"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cordlesssteve/topolop-shared-types.git"
+  }
+}

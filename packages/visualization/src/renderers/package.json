@@ -1,0 +1,25 @@
+{
+  "name": "@topolop/canvas-renderer",
+  "version": "0.1.0",
+  "description": "Canvas-based visualization engine for Topolop",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "jest",
+    "dev": "node src/demo.js",
+    "build": "webpack --mode=production"
+  },
+  "dependencies": {
+    "d3": "^7.8.5",
+    "d3-drag": "^3.0.0",
+    "d3-force": "^3.0.0",
+    "d3-selection": "^3.0.0",
+    "d3-zoom": "^3.0.0",
+    "js-yaml": "^4.1.0",
+    "three": "^0.179.1"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4"
+  }
+}
