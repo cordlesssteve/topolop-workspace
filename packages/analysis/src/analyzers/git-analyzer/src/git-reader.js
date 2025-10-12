@@ -233,6 +233,80 @@ class GitReader {
     }
   }
 
+  /**
+   * Get commits since a specific commit hash (for incremental analysis)
+   * @param {string} sinceCommit - Commit hash to start from (exclusive)
+   * @param {Object} options - Additional options
+   * @returns {Array} New commits since the specified commit
+   */
+  async getCommitsSince(sinceCommit, options = {}) {
+    const defaultOptions = {
+      maxCount: null,
+      branch: 'HEAD'
+    };
+
+    const opts = { ...defaultOptions, ...options };
+
+    try {
+      // Get commits that are reachable from branch but not from sinceCommit
+      const logArgs = ['log', `${sinceCommit}..${opts.branch}`, '--format=%H|%an|%ae|%ad|%s'];
+
+      if (opts.maxCount) {
+        logArgs.push(`-n`, opts.maxCount.toString());
+      }
+
+      const logOutput = await this.git.raw(logArgs);
+
+      if (!logOutput.trim()) {
+        return []; // No new commits
+      }
+
+      return logOutput.trim().split('\n').map(line => {
+        const [hash, authorName, authorEmail, date, ...messageParts] = line.split('|');
+        return {
+          hash,
+          shortHash: hash.substring(0, 8),
+          date: new Date(date),
+          message: messageParts.join('|'), // Rejoin in case message had pipes
+          author: {
+            name: authorName,
+            email: authorEmail
+          }
+        };
+      });
+    } catch (error) {
+      throw new Error(`Failed to get commits since ${sinceCommit}: ${error.message}`);
+    }
+  }
+
+  /**
+   * Get the most recent commit hash
+   * @param {string} branch - Branch to check (default: HEAD)
+   * @returns {string} The most recent commit hash
+   */
+  async getLatestCommitHash(branch = 'HEAD') {
+    try {
+      const log = await this.git.log({ maxCount: 1, from: branch });
+      return log.latest?.hash || null;
+    } catch (error) {
+      throw new Error(`Failed to get latest commit hash: ${error.message}`);
+    }
+  }
+
+  /**
+   * Check if a commit exists in the repository
+   * @param {string} commitHash - Commit hash to check
+   * @returns {boolean} True if commit exists
+   */
+  async commitExists(commitHash) {
+    try {
+      await this.git.raw(['cat-file', '-t', commitHash]);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
   _mapGitStatus(statusCode) {
     const statusMap = {
       'A': 'added',
@@ -242,7 +316,7 @@ class GitReader {
       'C': 'copied',
       'U': 'updated'
     };
-    
+
     return statusMap[statusCode] || 'unknown';
   }
 }
